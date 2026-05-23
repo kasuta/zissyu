@@ -1,0 +1,360 @@
+% physmotion.sty
+% 物体の運動を表す図を描くためのスタイルファイル
+%
+% ============================================================
+% コマンド一覧
+% ============================================================
+%
+% 【等加速度運動の図】
+%   \motiondiagram{初速度}{終速度}{加速度}{時刻変数}
+%   例: \motiondiagram{v_0}{v}{a}{t}
+%       \motiondiagram{v_0}{v}{a}{\tau}
+%
+%   引数:
+%     #1: 初速度の記号 (例: v_0)
+%     #2: 終速度の記号 (例: v)
+%     #3: 加速度の記号 (例: a)
+%     #4: 右側の時刻変数 (例: t, \tau, T)
+%
+% ------------------------------------------------------------
+%
+% 【水平投射の図】
+%   \projectilediagram{初速度}{水平速度}{鉛直速度}{合成速度}{重力加速度}{時刻変数}
+%   例: \projectilediagram{v_0}{v_x}{v_y}{v}{g}{t}
+%
+%   引数:
+%     #1: 初速度（水平）の記号 (例: v_0)
+%     #2: 水平速度成分の記号  (例: v_x)
+%     #3: 鉛直速度成分の記号  (例: v_y)
+%     #4: 合成速度の記号      (例: v)
+%     #5: 重力加速度の記号    (例: g)
+%     #6: 右側の時刻変数      (例: t, \tau)
+%
+% ============================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{physmotion}[2024/01/01 Physics Motion Diagram]
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+% ============================================================
+% \motiondiagram — 等加速度運動
+% ============================================================
+\newcommand{\motiondiagram}[4]{%
+  \def\R{0.35}%
+  \def\CY{\R}%
+  \def\Vshort{0.9}%
+  \def\Vlong{1.5}%
+  \begin{tikzpicture}[
+    baseline=(current bounding box.center),
+    >={Stealth[length=5pt, width=4pt]}
+  ]
+    % x 軸
+    \draw[->] (-0.7, 0) -- (7.2, 0)
+      node[right] {\small $x$};
+
+    % 左側の物体 (t=0)
+    \draw[thick] (0.5, \CY) circle (\R);
+    \draw (0.5, -0.1) -- (0.5, 0.1);
+    \node[above=2pt] at (0.5, \CY+\R) {\small $t=0$};
+    \node[below=2pt] at (0.5, 0)      {\small $O$};
+    \draw[->] (0.5, \CY) -- +(\Vshort, 0)
+      node[above, pos=0.75] {\small $#1$};
+
+    % 中央の加速度矢印
+    \draw[-{Stealth[length=10pt, width=10pt]}, line width=3pt]
+      (2.1, \CY) -- (3.1, \CY);
+    \node[above=2pt] at (2.6, \CY+0.15) {\small $#3$};
+
+    % 右側の物体
+    \draw[thick] (4.2, \CY) circle (\R);
+    \draw (4.2, -0.1) -- (4.2, 0.1);
+    \node[above=2pt] at (4.2, \CY+\R) {\small $t=#4$};
+    \node[below=2pt] at (4.2, 0)      {\small $x$};
+    \draw[->] (4.2, \CY) -- +(\Vlong, 0)
+      node[above, midway] {\small $#2$};
+
+  \end{tikzpicture}%
+}
+
+% ============================================================
+% \dashedseparator — 中央に表示する破線区切り
+% 使用例: \dashedseparator
+% ============================================================
+\newcommand{\dashedseparator}{%
+  \par\bigskip\noindent
+  \begin{center}
+    \begin{tikzpicture}
+      \draw[dashed, thick] (0,0) -- (\textwidth,0);
+    \end{tikzpicture}
+  \end{center}
+  \par\bigskip
+}
+
+% ============================================================
+% \projectilediagram — 水平投射
+%   座標系: 原点 左上、x軸 右向き、y軸 下向き（TikZ の y 正方向 = 下）
+%   ※ TikZ は y 正が上なので、「下向き正」は座標をすべて負にするか
+%     yscale=-1 で実現する。ここでは yscale=-1 を使う。
+%   引数: {v_0}{v_x}{v_y}{v}{g}{時刻変数}
+% ============================================================
+\newcommand{\projectilediagram}[6]{%
+  % ---- 寸法定義 ----
+  % 物理的な値（図面スケールで設定）
+  \def\Px{3.0}%   途中位置 x
+  \def\Py{2.2}%   途中位置 y（下向き正）
+  \def\VH{1.0}%   水平速度矢印の長さ（v_0 と vx で共通）
+  \def\VV{0.85}%  鉛直速度矢印の長さ（下向き、接線計算で上書き）
+  \def\R{0.18}%   物体の円半径
+  \begin{tikzpicture}[
+    baseline=(current bounding box.north),
+    yscale=-1,   % y軸を下向き正に反転
+    >={Stealth[length=5pt, width=4pt]}
+  ]
+
+    % ---------- 軸（原点 = 左上） ----------
+    % x 軸（右向き、5.0 → 4.25 に短縮 ≈ 17/20）
+    \draw[->] (0, 0) -- (4.25, 0) node[right] {\small $x$};
+    % y 軸（下向き；yscale=-1 なので画面上は下に伸びる）
+    \draw[->] (0, 0) -- (0, 3.5) node[below] {\small $y$};
+
+    % ---------- 放物線（破線、原点→y表示範囲末端まで延長） ----------
+    \draw[dashed, thick]
+      (0, 0)
+      .. controls (1.2, 0) and (2.8, 1.6) ..
+      (3.79, 3.5);
+
+    % ---------- 原点の物体（t=0） ----------
+    \draw[black] (0, 0) circle (\R);
+    % t=0 を球の左上に移動
+    \node[above left=1pt] at (-\R, 0) {\small $t=0$};
+    % 初速度 v_0（右向き・赤、ラベルを矢印の上）
+    \draw[->, thick, red]
+      (0, 0) -- (\VH, 0)
+      node[above, pos=0.7] {\small $#1$};
+
+    % ---------- 重力矢印（y軸左側、下向き） ----------
+    \draw[-{Stealth[length=10pt, width=10pt]}, line width=3pt]
+      (-0.7, 0.8) -- (-0.7, 1.7)
+      node[left, midway] {\small $#5$};
+
+    % ---------- 途中位置の物体 ----------
+    \draw[black] (\Px, \Py) circle (\R);
+    % 時刻ラベルを球の左側に移動
+    \node[left=2pt] at (\Px-\R, \Py) {\small $t=#6$};
+
+    % 接線方向の計算:
+    %   放物線 y = k*x^2 の x=Px での傾き = 2k*Px = 2*Py/Px
+    %   vy/vx = 2*2.2/3.0 ≈ 1.467
+    \def\VVa{1.467}%  接線方向に合わせた vy の長さ
+
+    % 点線補助線（平行四辺形）
+    \draw[dotted]
+      (\Px,       \Py)         -- (\Px+\VH,  \Py);
+    \draw[dotted]
+      (\Px,       \Py)         -- (\Px,      \Py+\VVa);
+    \draw[dotted]
+      (\Px+\VH,   \Py)         -- (\Px+\VH,  \Py+\VVa);
+    \draw[dotted]
+      (\Px,       \Py+\VVa)    -- (\Px+\VH,  \Py+\VVa);
+
+    % vx（右向き・赤）
+    \draw[->, thick, red]
+      (\Px, \Py) -- (\Px+\VH, \Py)
+      node[above, pos=0.85] {\small $#2$};
+
+    % vy（下向き・緑）
+    \draw[->, thick, green!60!black]
+      (\Px, \Py) -- (\Px, \Py+\VVa)
+      node[left, pos=0.85] {\small $#3$};
+
+    % v（斜め右下・青、接線方向）
+    \draw[->, thick, blue]
+      (\Px, \Py) -- (\Px+\VH, \Py+\VVa)
+      node[right] {\small $#4$};
+
+  \end{tikzpicture}%
+}
+
+% ============================================================
+% \obliqueprojectilediagram — 斜方投射
+%   座標系: 原点 左下、x軸 右向き、y軸 上向き（TikZ の y 正方向 = 上）
+%   引数: {初速度v_0}{仰角θ}{水平成分v_{x0}}{鉛直成分v_{y0}}{重力加速度g}{時刻変数}
+% ============================================================
+\newcommand{\obliqueprojectilediagram}[6]{%
+  \def\R{0.18}%   物体の円半径
+  \def\VH{0.85}%  水平速度矢印の長さ
+  % ---- 放物線: (0,0)..controls(1.5,3.5)and(4.5,3.5)..(6.2,0) ----
+  % ベジェ曲線上の実際の座標（Python で計算済み）
+  % 上昇中 (t=0.25): (1.363, 1.969)
+  % 最高点 (t=0.50): (3.025, 2.625)
+  % 下降中 (t=0.75): (4.725, 1.969)
+  \def\PxA{1.363}%  上昇中 x
+  \def\PyA{1.969}%  上昇中 y
+  \def\Ptop{3.025}% 最高点 x
+  \def\PyTop{2.625}%最高点 y
+  \def\PxB{4.725}%  下降中 x
+  \def\PyB{1.969}%  下降中 y
+  % 上昇中の接線傾き ≈ 0.843 → vy/vx=0.843 → vy=0.843*VH
+  \def\VyA{0.717}%  = 0.843 * 0.85
+  % 下降中の接線傾き ≈ -0.805 → vy=0.805*VH
+  \def\VyB{0.684}%  = 0.805 * 0.85
+  \begin{tikzpicture}[
+    baseline=(current bounding box.north),
+    >={Stealth[length=5pt, width=4pt]}
+  ]
+
+    % ---------- 軸（原点 = 左下） ----------
+    \draw[->] (-0.2, 0) -- (6.8, 0) node[right] {\small $x$};
+    \draw[->] (0, -0.2) -- (0, 3.8) node[above] {\small $y$};
+
+    % ---------- 放物線（破線） ----------
+    \draw[dashed, thick]
+      (0, 0)
+      .. controls (1.5, 3.5) and (4.5, 3.5) ..
+      (6.2, 0);
+
+    % ---------- 原点の物体（t=0） ----------
+    \draw[black] (0, 0) circle (\R);
+
+    % 初速度 v_0（斜め・青、v_{x0}とv_{y0}の平行四辺形の対角線）
+    % 接線方向 slope=3.5/1.5≈2.333 → vy0 = VH*slope = 0.85*2.333 ≈ 1.983
+    % 対角線終点 (VH, vy0) = (0.85, 1.983) が接線方向と一致
+    \def\Voy{1.983}%
+    \draw[->, thick, blue]
+      (0, 0) -- (\VH, \Voy)
+      node[left=4pt, pos=1.0] {\small $#1$};
+
+    % 仰角 θ の弧（接線方向 ≈ 66.8°）
+    \draw[->] (0.40, 0) arc[start angle=0, end angle=67, radius=0.40];
+    \node[right=2pt] at (0.42, 0.26) {\small $\theta$：仰角};
+
+    % 水平成分 v_{x0}（橙色）始点を原点に合わせる
+    \draw[->, thick, orange]
+      (0, 0) -- (\VH, 0)
+      node[below, pos=0.6] {\small $#3$};
+
+    % 鉛直成分 v_{y0}（緑）始点を原点に合わせる
+    \draw[->, thick, green!60!black]
+      (0, 0) -- (0, \Voy)
+      node[left, pos=0.6] {\small $#4$};
+
+    % 点線補助（平行四辺形）
+    \draw[dotted] (\VH, 0) -- (\VH, \Voy);
+    \draw[dotted] (0, \Voy) -- (\VH, \Voy);
+
+    % ---------- 重力矢印（右端、下向き） ----------
+    \draw[-{Stealth[length=8pt, width=8pt]}, line width=2.5pt, red]
+      (6.55, 2.6) -- (6.55, 1.6)
+      node[right, midway] {\small $#5$};
+
+    % ---------- 最高点 ----------
+    \draw[black] (\Ptop, \PyTop) circle (\R);
+    \node[above=3pt] at (\Ptop, \PyTop+\R)
+      {\small 最高点};
+
+    % 最高点での水平速度のみ（橙色）
+    \draw[->, thick, orange]
+      (\Ptop, \PyTop) -- (\Ptop+\VH, \PyTop)
+      node[above, pos=0.6] {\small $v_x$};
+
+    % ---------- 上昇中の途中位置 ----------
+    \draw[black] (\PxA, \PyA) circle (\R);
+
+    % vx（橙色・右向き）
+    \draw[->, thick, orange]
+      (\PxA, \PyA) -- (\PxA+\VH, \PyA)
+      node[below, pos=0.75] {\small $v_x$};
+
+    % vy（緑・上向き）
+    \draw[->, thick, green!60!black]
+      (\PxA, \PyA) -- (\PxA, \PyA+\VyA)
+      node[left, pos=0.6] {\small $v_y$};
+
+    % v（青・斜め上、接線方向）
+    \draw[->, thick, blue]
+      (\PxA, \PyA) -- (\PxA+\VH, \PyA+\VyA)
+      node[right=1pt] {\small $v$};
+
+    % 点線補助
+    \draw[dotted] (\PxA+\VH, \PyA) -- (\PxA+\VH, \PyA+\VyA);
+    \draw[dotted] (\PxA, \PyA+\VyA) -- (\PxA+\VH, \PyA+\VyA);
+
+    % ---------- 下降中の途中位置 ----------
+    \draw[black] (\PxB, \PyB) circle (\R);
+
+    % vx（橙色・右向き）
+    \draw[->, thick, orange]
+      (\PxB, \PyB) -- (\PxB+\VH, \PyB)
+      node[above, pos=0.75] {\small $v_x$};
+
+    % vy（緑・下向き）
+    \draw[->, thick, green!60!black]
+      (\PxB, \PyB) -- (\PxB, \PyB-\VyB)
+      node[left, pos=0.6] {\small $v_y$};
+
+    % v（青・斜め下、接線方向）
+    \draw[->, thick, blue]
+      (\PxB, \PyB) -- (\PxB+\VH, \PyB-\VyB)
+      node[right=1pt] {\small $v$};
+
+    % 点線補助
+    \draw[dotted] (\PxB+\VH, \PyB) -- (\PxB+\VH, \PyB-\VyB);
+    \draw[dotted] (\PxB, \PyB-\VyB) -- (\PxB+\VH, \PyB-\VyB);
+
+  \end{tikzpicture}%
+}
+
+\newcommand{\throwdowndiagram}[4]{%
+  \def\R{0.35}%
+  \def\CX{0.5}%        球の中心 x（軸より右）
+  \def\AX{-0.6}%       y 軸の x 座標（少し左）
+  \def\YtopC{0.4}%     上側の球の中心 y
+  \def\YbotC{3.0}%     下側の球の中心 y
+  \def\Vshort{0.9}%
+  \def\Vlong{1.5}%
+  \begin{tikzpicture}[
+    baseline=(current bounding box.north),
+    yscale=-1,
+    >={Stealth[length=5pt, width=4pt]}
+  ]
+    % y 軸（下向き正、左にオフセット）
+    \draw[->] (\AX, -0.7) -- (\AX, 5.5)
+      node[below] {\small $y$};
+
+    % ------- 上側の物体 (t=0) -------
+    % 軸から球の中心まで点線
+    \draw[dotted] (\AX, \YtopC) -- (\CX, \YtopC);
+    % 目盛りと原点ラベル
+    \draw (\AX-0.1, \YtopC) -- (\AX+0.1, \YtopC);
+    \node[left=2pt] at (\AX, \YtopC) {\small $O$};
+    % 球
+    \draw[thick] (\CX, \YtopC) circle (\R);
+    \node[right=2pt] at (\CX+\R, \YtopC) {\small $t=0$};
+    % 速度矢印（下向き）
+    \draw[->] (\CX, \YtopC) -- ++(0, \Vshort)
+      node[right, pos=0.75] {\small $#1$};
+
+    % ------- 中央の加速度矢印 -------
+    % 2球の中間付近: (0.4+3.0)/2 = 1.7、矢印は 1.5～2.1
+    \draw[-{Stealth[length=10pt, width=10pt]}, line width=3pt]
+      (1.2, 1.55) -- (1.2, 2.15);
+    % ラベルを矢印の右にずらす
+    \node[right=6pt] at (1.2, 1.85) {\small $#3$};
+
+    % ------- 下側の物体 -------
+    % 軸から球の中心まで点線
+    \draw[dotted] (\AX, \YbotC) -- (\CX, \YbotC);
+    % 目盛りと y ラベル
+    \draw (\AX-0.1, \YbotC) -- (\AX+0.1, \YbotC);
+    \node[left=2pt] at (\AX, \YbotC) {\small $y$};
+    % 球
+    \draw[thick] (\CX, \YbotC) circle (\R);
+    \node[right=2pt] at (\CX+\R, \YbotC) {\small $t=#4$};
+    % 速度矢印（下向き）
+    \draw[->] (\CX, \YbotC) -- ++(0, \Vlong)
+      node[right, midway] {\small $#2$};
+
+  \end{tikzpicture}%
+}

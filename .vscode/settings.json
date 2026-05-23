@@ -1,0 +1,91 @@
+{
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "lualatex",
+            "tools": [
+                "lualatex"
+            ]
+        },
+        {
+            "name": "upLaTeX ➜ dvipdfmx",
+            "tools": [
+                "uplatex",
+                "dvipdfmx"
+            ]
+        },
+        {
+            "name": "latexmk (uplatex+dvipdfmx)",
+            "tools": [
+                "latexmk-up"
+            ]
+        }
+    ],
+    "latex-workshop.latex.tools": [
+        {
+            "name": "lualatex",
+            "command": "lualatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-output-directory=%OUTDIR%",
+                "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "uplatex",
+            "command": "uplatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-output-directory=%OUTDIR%",
+                "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "dvipdfmx",
+            "command": "dvipdfmx",
+            "args": [
+                "-o",
+                "%OUTDIR%/%DOCFILE%.pdf",
+                "%OUTDIR%/%DOCFILE%.dvi"
+            ]
+        },
+        {
+            "name": "latexmk-up",
+            "command": "latexmk",
+            "args": [
+                "-e",
+                "$latex=q/uplatex %O -synctex=1 -interaction=nonstopmode -file-line-error -output-directory=%OUTDIR% %S/",
+                "-e",
+                "$dvipdf=q/dvipdfmx -o %OUTDIR%/%S.pdf %OUTDIR%/%S.dvi/",
+                "-pdfdvi",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ]
+        }
+    ],
+    "latex-workshop.latex.outDir": "out",
+    "latex-workshop.latex.clean.method": "glob",
+    "latex-workshop.latex.clean.fileTypes": [
+        "*.aux",
+        "*.bbl",
+        "*.blg",
+        "*.fdb_latexmk",
+        "*.fls",
+        "*.synctex.gz"
+    ],
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.latex.autoBuild.run": "never",
+    "latex-workshop.latex.clean.enabled": false,
+    "latex-workshop.message.log.show": false,
+    "latex-workshop.latex.autoClean.run": "never",
+    "files.encoding": "utf8",
+    "editor.renderWhitespace": "none",
+    "latex-workshop.intellisense.package.enabled": true,
+    "latex-workshop.synctex.afterBuild.enabled": true,
+    "latex-workshop.view.pdf.internal.synctex.keybinding": "double-click",
+    "latex-workshop.view.pdf.zoom": "fit",
+    "latex-workshop.view.pdf.split": "right"
+}
