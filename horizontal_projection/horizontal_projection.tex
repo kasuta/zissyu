@@ -1,0 +1,325 @@
+% LaTeX テンプレート — 授業資料用 (LuaLaTeX を想定、両面: 奇数ページにヘッダー)
+\documentclass[11pt,twoside]{article}
+
+% LuaLaTeX 向け設定: 日本語対応に luatexja-fontspec と fontspec を使用
+\usepackage{fontspec}
+\usepackage{luatexja-fontspec}
+
+% 必要に応じて日本語フォントを明示（環境に応じて変更してください）
+% 例: \setmainjfont{Noto Serif CJK JP}
+
+% 単位表示の統一: siunitx を使用
+\usepackage{siunitx}
+\sisetup{detect-mode=true, per-mode=symbol}
+
+% その他のパッケージ
+\usepackage{tikz}
+\usepackage{fancybox}
+\usepackage{ascmac}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{lipsum} % サンプル用ダミーテキスト
+\usepackage{ulem}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{dashrule}
+
+%Tikz
+\usepackage{physmotion}
+
+% 使い方: 以下を編集してください
+\newcommand{\SubjectTitle}{斜方投射} %テーマ
+\newcommand{\ClassRoomInfo}{\underline{\hspace{0.5cm}}年\underline{\hspace{0.5cm}}組　氏名\underline{\hspace{3cm}}}
+
+% 余白設定
+\geometry{top=20mm,bottom=25mm,left=20mm,right=20mm,heightrounded}
+
+% ヘッダー設定: 奇数ページに表示（左: 科目と内容、右: 学年組欄）
+\setlength{\headheight}{14pt}
+\setlength{\headsep}{36pt}
+\pagestyle{fancy}
+\fancyhf{} % 既定のヘッダー/フッターをクリア
+\fancyhead[LO]{\small 物理基礎「\SubjectTitle」} %Odd page Left headerを設定
+\fancyhead[RO]{\small \ClassRoomInfo} % Odd page Right headerを設定
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+% フッター中央にページ番号を表示
+\fancyfoot[C]{\small\thepage}
+
+% 偶数ページはヘッダーを空にして、本文が上から始まるようにする
+\fancyhead[LE,CE,RE]{}
+
+% ドキュメント開始
+\begin{document}
+%復習：等加速度直線運動=====================================================================================
+\section{\textbf{復習}}
+\begin{itembox}[l]{\textbf{〇等加速度直線運動}}
+	\begin{minipage}[t]{0.70\linewidth}
+	鉛直投げ下ろし運動の変位・速度の式
+	\Large
+	\[
+	\left(
+	\begin{array}{ll}
+		\text{①} \quad v = & \\
+		\text{②} \quad x = & \\
+		\text{③} \quad v^2 - v_0^2 = 2ax &
+	\end{array}
+	\right.
+	\]
+	\begin{center}
+		% \motiondiagram{初速度}{終速度}{加速度}：画像を挿入
+		\motiondiagram{v_0}{v}{a}{t}
+	\end{center}	
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.26\linewidth}
+		\begin{shadebox}
+			\begin{align*}
+				v\,[\si{\metre\per\second}] &\text{：速度} \\
+				v_0\,[\si{\metre\per\second}] &\text{：初速度} \\
+				a\,[\si{\metre\per\second\squared}] &\text{：加速度} \\
+				t\,[\si{\second}] &\text{：時間} \\
+				x\,[\si{\metre}] &\text{：変位} \\
+			\end{align*}
+		\end{shadebox}
+	\end{minipage}
+\end{itembox}
+% %復習：鉛直投げ下ろし=====================================================================================
+% \\
+% \begin{itembox}[l]{\textbf{〇鉛直投げ下ろし・鉛直投げ上げ}}
+% 	\begin{minipage}[t]{0.70\linewidth}
+% 		鉛直投げ下ろし運動の変位・速度の式
+% 		\Large
+% 		\[
+% 		\left(
+% 		\begin{array}{ll}
+% 			\text{①} \quad v = & \\
+% 			\text{②} \quad y = & \\
+% 			\text{③} \quad v^2 - v_0^2 = 2gy &
+% 		\end{array}
+% 		\right.
+% 		\]
+% 		\normalsize
+% 		\begin{shadebox}
+% 			$g\,[\si{\metre\per\second\squared}] \text{：重力加速度}$\\
+% 			$v_0=0$で自由落下
+% 		\end{shadebox}
+% 	\end{minipage}
+% 	\hfill
+% 	\begin{minipage}[t]{0.26\linewidth}
+% 		\begin{center}
+% 			% \throwdowndiagram{初速度v_0}{終速度v}{加速度g}{時刻変数t}：画像を挿入
+% 			\throwdowndiagram{v_0}{v}{g}{t}
+% 		\end{center}
+% 	\end{minipage}
+% \end{itembox}
+
+% %復習：鉛直投げ上げ=====================================================================================
+% \begin{itembox}[l]{\textbf{〇鉛直投げ上げ}}
+% 	\begin{minipage}[t]{0.70\linewidth}
+% 		鉛直投げ上げ運動の変位・速度の式
+% 		\Large
+% 		\[
+% 		\left(
+% 		\begin{array}{ll}
+% 			\text{①} \quad v = & \\
+% 			\text{②} \quad y = & \\
+% 			\text{③} \quad v^2 - v_0^2 = 2gy &
+% 		\end{array}
+% 		\right.
+% 		\]
+% 		\normalsize
+% 		\begin{shadebox}
+% 			$g\,[\si{\metre\per\second\squared}] \text{：重力加速度}$\\
+% 			$v_0=0$で自由落下
+% 		\end{shadebox}
+% 	\end{minipage}
+% 	\hfill
+% 	\begin{minipage}[t]{0.26\linewidth}
+% 		\begin{center}
+% 			% \throwdowndiagram{初速度v_0}{終速度v}{加速度g}{時刻変数t}：画像を挿入
+% 			\throwdowndiagram{v_0}{v}{g}{t}
+% 		\end{center}
+% 	\end{minipage}
+% \end{itembox}
+% \clearpage
+
+
+%=====================================================================================
+% 水平投射
+\section{水平投射}
+	\begin{minipage}[t]{0.34\linewidth}
+		\projectilediagram{v_0}{v_x}{v_y}{v}{g}{t}
+		\\\\\\
+		\begin{itembox}[l]{補足}
+			I. 実際の速度$v$[m/s]は\\\qquad
+			\(
+				v = 
+			\)\\
+			で求めることができる。\\
+			\to 詳しくはベクトルを勉強\\\\
+			II. ボールの軌道の導出\\
+			\to 方針：右の(i),(ii)式から$t$を消して、$x$と$y$と定数$g$,$v_0$のみの式にする。\\\\\\\\\\\\\\
+		\end{itembox}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.58\linewidth}
+		
+		\ovalbox{①水平投射とは？}\\
+		左図のような重力($y$軸方向)がかかる運動のうち、初速度$v_0$が水平($x$軸方向)成分のみである物体の運動。\\\\
+		\ovalbox{②今までとの違い}\\
+		重力方向以外にも運動する。\\
+		　\to \textbf{x軸方向も考えなければならない}\\\\
+		\ovalbox{③セットアップ}
+			\begin{itemize}[leftmargin=2em,itemsep=0pt,topsep=2pt]
+				\item[(i)]
+				軸の向き：
+				初速度の向きを $x$ 軸の正、
+				重力加速度の向きを $y$ 軸の正とする。
+
+				\item[(ii)]
+				$t=0$ のとき、
+				物体は原点 $(x,y)=(0,0)$ にある。
+
+				\item[(iii)]
+				重力加速度の大きさを $g$、
+				初速度の大きさを $v_0$ とする。
+			\end{itemize}
+			　\\
+		\ovalbox{④$t$秒後の物体の位置と速度}　\uuline{\textbf{大事！！}}\\
+		\textbf{point!：}$x$と$y$を分けて考える\\
+		\textbf{point!：}$y$軸方向のみ加速している
+		\begin{itemize}[leftmargin=2em,itemsep=0pt,topsep=2pt]
+			\item[(i)]
+			$x$軸方向の運動：\\
+			\(
+			\left(
+			\begin{array}{ll}
+				\text{①} \quad a_x = & \\
+				\text{②} \quad v_x = & \\
+				\text{③} \quad x = & \\
+			\end{array}
+			\right.
+			\)\\
+			\to x軸方向の運動は\underline{\hspace{3.5cm}}と一致！\\
+			\item[(ii)]
+			$y$軸方向の運動：\\
+			\(
+			\left(
+			\begin{array}{ll}
+				\text{①} \quad a_y = & \\
+				\text{②} \quad v_y = & \\
+				\text{③} \quad y = & \\
+			\end{array}
+			\right.
+			\)\\
+			\to y軸方向の運動は\underline{\hspace{3.5cm}}と一致！
+		\end{itemize}
+	\end{minipage}
+\newpage
+%=====================================================================================
+	\section{演習問題(水平投射)}
+	% \begin{shadebox}
+	% 	問題を解くときのポイント：\\
+	% 		①軸の向きを意識する(軸と同じ方向のベクトルは+、逆向きのベクトルは-になる)\\
+	% 		②x軸方向とy軸方向を分けて考える\\
+	% 		③公式を使って、ほしい量を求める\\
+	% 		　ただし、この時どの文字が最後まで残っていいか意識する\\
+	% 		　例)前ページの軌道を計算する際には、$y$を$x$の式で表すため、$t$は削除する。\\
+	% 		　　\,\,\,\,\,$g$や$v_0$は問題文で与えられる初期条件なので残してもよい\\
+	% 		　　\,\,\,\,\,問題によっては「$y$を$x$，$g$，$v_0$を用いて表せ」などと指示されることも多い\\
+	% 		③単位を確認して、軽い確認ができる\\
+	% 		　例)速度を求める問題で、答えの単位が\si{\metre\per\second$^2$}になっていたら間違っている可能性が高い
+	% \end{shadebox}
+	% 　\\
+
+	
+	問1．高さ$19.6\,\si{\metre}$のビルの屋上から
+	小球を水平方向に速さ$6.0\,\si{\metre\per\second}$で投げ出した。
+	重力加速度の大きさを　　　\,\,\,\,$9.8\,\si{\metre\per\second\squared}$として
+	以下の問いに答えよ。\\
+	(1)1.0秒後の水平方向の速度成分は何$\si{\metre\per\second}$か。\\\\\\\\\\\\\\\\
+	(2)1.0秒後の鉛直方向の速度成分は何$\si{\metre\per\second}$か。\\\\\\\\\\\\\\\\
+	(3)1.0秒後の小球の速さは何$\si{\metre\per\second}$か。\\\\\\\\\\\\\\\\
+	(4)小球が地面に落ちるまでの時間は何$\si{\second}$か。\\\\\\\\\\\\\\\\\\\\
+	(5)小球が地面に落ちるまでの水平距離は何$\si{\metre}$か。
+	\clearpage
+
+	% % 斜方投射
+	% \section{斜方投射}
+	% 	\begin{minipage}[t]{0.44\linewidth}
+	% 		\obliqueprojectilediagram{v_0}{\theta}{v_{x0}}{v_{y0}}{g}{t}\\
+	% 		\begin{itembox}[l]{補足}
+	% 			I.初速度について(三角関数の復習)\\\\\\\\
+	% 			II. 最高点について\\\\\\\\
+	% 			III. ボールの軌道の導出\\
+	% 			\to 方針：右の(i),(ii)式から$t$を消して、$x$と$y$と$g$，$v_0$，$\theta$のみの式にする。\\\\\\\\\\\\\\\\\\
+	% 		\end{itembox}
+	% 	\end{minipage}
+	% 	\hfill	
+	% 	\begin{minipage}[t]{0.52\linewidth}
+	% 		\ovalbox{①斜方投射とは？}\\
+	% 		左図のような重力がかかる運動のうち、初速度$v_0$が任意の方向を向いている物体の運動。\\\\
+	% 		\ovalbox{②今までとの違い}\\
+	% 		$v_0$が$x$成分と$y$成分の両方の値を持ちうる。\\\\
+	% 		\ovalbox{③セットアップ}
+	% 			\begin{itemize}[leftmargin=2em,itemsep=0pt,topsep=2pt]
+	% 				\item[(i)]
+	% 				軸の向き：
+	% 				水平右向きを $x$ 軸の正、
+	% 				鉛直上向きを $y$ 軸の正とする。
+	
+	% 				\item[(ii)]
+	% 				$t=0$ のとき、
+	% 				物体は原点 $(x,y)=(0,0)$ にある。
+	
+	% 				\item[(iii)]
+	% 				重力加速度の大きさを $g$、
+	% 				初速度の大きさを $v_0$、仰角を $\theta$ とする。
+	
+	% 				\item[(iv)]
+	% 				初速度の補足：各方向の初速度は以下のようになる。\\
+	% 				$v_{x0} = v_0\cos\theta$（$x$軸方向の初速度）\\
+	% 				$v_{y0} = v_0\sin\theta$（$y$軸方向の初速度）\\
+	% 			\end{itemize}
+	% 		\ovalbox{④$t$秒後の物体の位置と速度}　\uuline{\textbf{大事！！}}\\
+	% 		\textbf{point!：}$x$と$y$を分けて考える\\
+	% 		\textbf{point!：}$y$軸方向のみ加速している
+	% 		\begin{itemize}[leftmargin=2em,itemsep=0pt,topsep=2pt]
+	% 			\item[(i)]
+	% 			$x$軸方向の運動：\\
+	% 			\(
+	% 			\left(
+	% 			\begin{array}{ll}
+	% 				\text{①} \quad a_x = & \\
+	% 				\text{②} \quad v_x = & \\
+	% 				\text{③} \quad x = & \\
+	% 			\end{array}
+	% 			\right.
+	% 			\)\\
+	% 			\to x軸方向の運動は\underline{\hspace{3.5cm}}と一致！\\
+	% 			\item[(ii)]
+	% 			$y$軸方向の運動：\\
+	% 			\(
+	% 			\left(
+	% 			\begin{array}{ll}
+	% 				\text{①} \quad a_y = & \\
+	% 				\text{②} \quad v_y = & \\
+	% 				\text{③} \quad y = & \\
+	% 			\end{array}
+	% 			\right.
+	% 			\)\\
+	% 			\to y軸方向の運動は\underline{\hspace{3.5cm}}と一致！
+	% 		\end{itemize}
+	% \end{minipage}\\\\\\
+	% %=====================================================================================
+	% \begin{shadebox}
+	% 	まとめ\\\\\\\\\\\\\\\\\\\\
+	% \end{shadebox}
+	% \clearpage
+
+	% \section{演習問題(斜方投射)}
+	\clearpage
+\end{document}
+

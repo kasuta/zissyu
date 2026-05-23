@@ -1,0 +1,166 @@
+% LaTeX テンプレート — 授業資料用 (LuaLaTeX を想定、両面: 奇数ページにヘッダー)
+\documentclass[11pt,twoside]{article}
+
+% LuaLaTeX 向け設定: 日本語対応に luatexja-fontspec と fontspec を使用
+\usepackage{fontspec}
+\usepackage{luatexja-fontspec}
+
+% 必要に応じて日本語フォントを明示（環境に応じて変更してください）
+% 例: \setmainjfont{Noto Serif CJK JP}
+
+% 単位表示の統一: siunitx を使用
+\usepackage{siunitx}
+\sisetup{detect-mode=true, per-mode=symbol}
+
+% その他のパッケージ
+\usepackage{tikz}
+\usepackage{fancybox}
+\usepackage{ascmac}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{lipsum} % サンプル用ダミーテキスト
+\usepackage{ulem}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{dashrule}
+\usepackage{graphicx}
+
+%Tikz
+\usepackage{physmotion}
+
+% 使い方: 以下を編集してください
+\newcommand{\SubjectTitle}{斜方投射} %テーマ
+\newcommand{\ClassRoomInfo}{\underline{\hspace{0.5cm}}年\underline{\hspace{0.5cm}}組　氏名\underline{\hspace{3cm}}}
+
+% 余白設定
+\geometry{top=20mm,bottom=25mm,left=20mm,right=20mm,heightrounded}
+
+% ヘッダー設定: 奇数ページに表示（左: 科目と内容、右: 学年組欄）
+\setlength{\headheight}{14pt}
+\setlength{\headsep}{36pt}
+\pagestyle{fancy}
+\fancyhf{} % 既定のヘッダー/フッターをクリア
+\fancyhead[LO]{\small 物理基礎「\SubjectTitle」} %Odd page Left headerを設定
+\fancyhead[RO]{\small \ClassRoomInfo} % Odd page Right headerを設定
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+% フッター中央にページ番号を表示
+\fancyfoot[C]{\small\thepage}
+
+% 偶数ページはヘッダーを空にして、本文が上から始まるようにする
+\fancyhead[LE,CE,RE]{}
+
+% ドキュメント開始
+\begin{document}
+	% 斜方投射
+	\section{斜方投射}
+		\begin{minipage}[t]{0.44\linewidth}
+			\obliqueprojectilediagram{v_0}{\theta}{v_{0x}}{v_{0y}}{g}{t}\\
+			\begin{itembox}[l]{補足}
+				I. 最高点について\\\\\\\\\\\\\\\\
+				II. ボールの軌道の導出\\
+				\to 方針：右の(i),(ii)式から$t$を消して、$x$と$y$と$g$，$v_0$，$\theta$のみの式にする。\\\\\\\\\\\\\\\\\\
+			\end{itembox}
+			　\\
+			\begin{itembox}[l]{<参考>$v_0$,$v_x$,$v_{0x}$}
+				物理の問題では、変数の右下にラベルを\\張ることが多々ある。\\
+				今回出てきた$v_0$、$v_x$、$v_{0x}$もその例である。\\
+				以下にそれぞれの意味をまとめる。
+				\begin{center}
+					\begin{tabular}{ll}
+						$v_0$    & ：初速度の大きさ \\
+						$v_x$    & ：$x$軸方向の速度 \\
+						$v_{0x}$ & ：$x$軸方向の初速度 \\
+					\end{tabular}
+				\end{center}
+				　
+			\end{itembox}
+		\end{minipage}
+		\hfill	
+		\begin{minipage}[t]{0.52\linewidth}
+			\ovalbox{①斜方投射とは？}\\
+			左図のような重力がかかる運動のうち、初速度$v_0$が任意の方向を向いている物体の運動。\\\\
+			\ovalbox{②今までとの違い}\\
+			$v_0$が$x$成分と$y$成分の両方の値を持ちうる。\\\\
+			\ovalbox{③セットアップ}
+				\begin{itemize}[leftmargin=2em,itemsep=0pt,topsep=2pt]
+					\item[(i)]
+					軸の向き：
+					水平右向きを $x$ 軸の正、
+					鉛直上向きを $y$ 軸の正とする。
+	
+					\item[(ii)]
+					$t=0$ のとき、
+					物体は原点 $(x,y)=(0,0)$ にある。
+	
+					\item[(iii)]
+					重力加速度の大きさを $g$、
+					初速度の大きさを $v_0$、仰角を $\theta$ とする。
+	
+					\item[(iv)]
+					初速度の補足：各方向の初速度は以下のようになる。\\
+					$v_{0x} = v_0\cos\theta$（$x$軸方向の初速度）\\
+					$v_{0y} = v_0\sin\theta$（$y$軸方向の初速度）\\
+				\end{itemize}
+			\ovalbox{④$t$秒後の物体の位置と速度}　\uuline{\textbf{大事！！}}\\
+			\textbf{point!：}$x$と$y$を分けて考える\\
+			\textbf{point!：}$y$軸方向のみ加速している
+			\begin{itemize}[leftmargin=2em,itemsep=0pt,topsep=2pt]
+				\item[(i)]
+				$x$軸方向の運動：\\
+				\(
+				\left(
+				\begin{array}{ll}
+					\text{①} \quad a_x = & \\
+					\text{②} \quad v_x = & \\
+					\text{③} \quad x = & \\
+				\end{array}
+				\right.
+				\)\\
+				\to x軸方向の運動は\underline{\hspace{3.5cm}}と一致！\\
+				\item[(ii)]
+				$y$軸方向の運動：\\
+				\(
+				\left(
+				\begin{array}{ll}
+					\text{①} \quad a_y = & \\
+					\text{②} \quad v_y = & \\
+					\text{③} \quad y = & \\
+				\end{array}
+				\right.
+				\)\\
+				\to y軸方向の運動は\underline{\hspace{3.5cm}}と一致！
+			\end{itemize}
+			　\\
+			\begin{itembox}[l]{<参考>三角比}
+				\begin{minipage}[t]{0.4\linewidth}
+					\scalebox{0.8}{\righttriangle{c}{b}{a}{\theta}}
+				\end{minipage}
+				\begin{minipage}[t]{0.6\linewidth}
+					\begin{tabular}{|c|c|c|c|}\hline
+						$\theta$ & $\sin\theta$ & $\cos\theta$ & $\tan\theta$ \\\hline
+						0° & 0 & 1 & 0 \\\hline
+						30° & $\frac{1}{2}$ & $\frac{\sqrt{3}}{2}$ & $\frac{1}{\sqrt{3}}$ \\\hline
+						45° & $\frac{\sqrt{2}}{2}$ & $\frac{\sqrt{2}}{2}$ & 1 \\\hline
+						60° & $\frac{\sqrt{3}}{2}$ & $\frac{1}{2}$ & $\sqrt{3}$ \\\hline
+						90° & 1 & 0 &  \\\hline
+					\end{tabular}
+					　\\\\\\
+				\end{minipage}
+			\end{itembox}
+		\end{minipage}
+	\clearpage
+
+	%=====================================================================================
+	\section{演習問題(斜方投射)}
+	問1.小球を水平な地面から仰角$30°$、速さ$39.2\,\si{\metre\per\second}$で投げた。
+	重力加速度の大きさを$9.8\,\si{\metre\per\second\squared}$,水平方向を　　\,\,$x$軸の正、
+	鉛直上向きを$y$軸の正として以下の問いに答えよ。\\
+	(1)初速度の$x$成分及び$y$成分は何$\si{\metre\per\second}$か。\\\\\\\\\\\\
+	(2)最高点に達するまでの時間は何$\si{\second}$か。\\\\\\\\\\\\
+	(3)最高点の高さは何$\si{\metre}$か。\\\\\\\\\\\\
+	(4)投げてから地面に達するまでの時間は何$\si{\second}$か。\\\\\\\\\\\\\\
+	(5)小球が地面に落ちたときの水平距離は何$\si{\metre}$か。
+	\clearpage
+\end{document}

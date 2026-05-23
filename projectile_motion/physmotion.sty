@@ -358,3 +358,40 @@
 
   \end{tikzpicture}%
 }
+
+\newcommand{\righttriangle}[4]{%
+  % #1: 斜辺ラベル (例: c)
+  % #2: 底辺ラベル (例: b)
+  % #3: 高さラベル (例: a)
+  % #4: 仰角ラベル (例: \theta)
+  \def\W{3.2}%  底辺の長さ
+  \def\H{2.0}%  高さ
+  \def\AR{0.3}% 直角マークの大きさ
+  \def\AN{0.5}% 仰角弧の半径
+  \begin{tikzpicture}[
+    baseline=(current bounding box.center),
+    >={Stealth[length=5pt, width=4pt]}
+  ]
+    % 三角形の三辺
+    \draw[thick] (0, 0) -- (\W, 0) -- (\W, \H) -- cycle;
+
+    % 直角マーク（右下頂点）
+    \draw (\W-\AR, 0) -- (\W-\AR, \AR) -- (\W, \AR);
+
+    % 仰角の弧（左下頂点）
+    \draw ({\AN*cos(32)}, {\AN*sin(32)})
+      arc[start angle=32, end angle=0, radius=\AN];
+    % 仰角ラベル
+    \node at (0.62, 0.18) {\small $#4$};
+
+    % 斜辺ラベル（中点の左上）
+    \node[above left=1pt] at ({\W/2}, {\H/2}) {\small $#1$};
+
+    % 底辺ラベル（下中央）
+    \node[below=3pt] at ({\W/2}, 0) {\small $#2$};
+
+    % 高さラベル（右中央）
+    \node[right=3pt] at (\W, {0.5*\H}) {\small $#3$};
+
+  \end{tikzpicture}%
+}
