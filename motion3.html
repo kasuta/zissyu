@@ -99,6 +99,18 @@
   .progress-wrap { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
   #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--coral)); border-radius: 2px; transition: width 0.05s linear; }
 
+  /* 勝者ハイライト */
+  .canvas-wrap.winner-a { border-color: var(--blue);  box-shadow: 0 0 20px rgba(74,158,255,0.25); }
+  .canvas-wrap.winner-b { border-color: var(--coral); box-shadow: 0 0 20px rgba(255,122,92,0.25); }
+  .win-crown {
+    font-size: 16px; margin-left: 6px; display: inline-block;
+    animation: crownPop 0.5s 0.15s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes crownPop {
+    from { opacity: 0; transform: scale(0) rotate(-30deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
   @media (max-width: 800px) {
     .canvases { grid-template-columns: 1fr; }
     .stats { grid-template-columns: repeat(3,1fr); }
@@ -135,30 +147,22 @@
     </div>
   </div>
 
-  <div class="stats">
+  <div class="stats" style="grid-template-columns: repeat(4,1fr);">
     <div class="stat-card stat-a">
-      <div class="stat-label" style="color:var(--blue)">A — 経過時間 t</div>
-      <div class="stat-value" id="stat-t">0.00<span class="stat-unit">s</span></div>
+      <div class="stat-label" style="color:var(--blue)">A — 滞空時間</div>
+      <div class="stat-value" id="stat-atf">—<span class="stat-unit">s</span></div>
     </div>
     <div class="stat-card stat-a">
-      <div class="stat-label" style="color:var(--blue)">A — 高さ y</div>
-      <div class="stat-value" id="stat-ay" style="color:var(--gold)">—<span class="stat-unit">m</span></div>
-    </div>
-    <div class="stat-card stat-a">
-      <div class="stat-label" style="color:var(--blue)">A — 合成速度 |v|</div>
-      <div class="stat-value" id="stat-av">0.0<span class="stat-unit">m/s</span></div>
+      <div class="stat-label" style="color:var(--blue)">A — 水平移動距離</div>
+      <div class="stat-value" id="stat-adist">—<span class="stat-unit">m</span></div>
     </div>
     <div class="stat-card stat-b">
-      <div class="stat-label" style="color:var(--coral)">B — 高さ y</div>
-      <div class="stat-value" id="stat-by" style="color:var(--gold)">—<span class="stat-unit">m</span></div>
+      <div class="stat-label" style="color:var(--coral)">B — 滞空時間</div>
+      <div class="stat-value" id="stat-btf">—<span class="stat-unit">s</span></div>
     </div>
     <div class="stat-card stat-b">
-      <div class="stat-label" style="color:var(--coral)">B — 合成速度 |v|</div>
-      <div class="stat-value" id="stat-bv">0.0<span class="stat-unit">m/s</span></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">飛行時間（長い方）</div>
-      <div class="stat-value" id="stat-tf">—<span class="stat-unit">s</span></div>
+      <div class="stat-label" style="color:var(--coral)">B — 水平移動距離</div>
+      <div class="stat-value" id="stat-bdist">—<span class="stat-unit">m</span></div>
     </div>
   </div>
 
@@ -176,9 +180,9 @@
       <div class="ctrl-group">
         <div class="ctrl-top">
           <span class="ctrl-name">投射角 θA</span>
-          <span class="ctrl-val blue" id="ta-out">45°</span>
+          <span class="ctrl-val blue" id="ta-out">1°</span>
         </div>
-        <input type="range" class="blue-thumb" id="ta" min="1" max="89" value="45" step="1">
+        <input type="range" class="blue-thumb" id="ta" min="1" max="90" value="1" step="1">
       </div>
       <div class="ctrl-group">
         <div class="ctrl-top">
@@ -190,9 +194,9 @@
       <div class="ctrl-group">
         <div class="ctrl-top">
           <span class="ctrl-name">投射角 θB</span>
-          <span class="ctrl-val coral" id="tb-out">60°</span>
+          <span class="ctrl-val coral" id="tb-out">90°</span>
         </div>
-        <input type="range" class="coral-thumb" id="tb" min="1" max="89" value="60" step="1">
+        <input type="range" class="coral-thumb" id="tb" min="1" max="90" value="90" step="1">
       </div>
     </div>
     <!-- 軸・再生行 -->
@@ -263,11 +267,15 @@ const els = {
   btnPlay: document.getElementById('btn-play'),
   btnReset: document.getElementById('btn-reset'),
   btnPredict: document.getElementById('btn-predict'),
-  statT:  document.getElementById('stat-t'),
-  statAy: document.getElementById('stat-ay'), statAv: document.getElementById('stat-av'),
-  statBy: document.getElementById('stat-by'), statBv: document.getElementById('stat-bv'),
-  statTf: document.getElementById('stat-tf'),
+  statAtf:  document.getElementById('stat-atf'),
+  statAdist: document.getElementById('stat-adist'),
+  statBtf:  document.getElementById('stat-btf'),
+  statBdist: document.getElementById('stat-bdist'),
   progress: document.getElementById('progress-bar'),
+  wrapA: document.querySelector('.canvas-wrap:has(#cv-a)'),
+  wrapB: document.querySelector('.canvas-wrap:has(#cv-b)'),
+  labelA: document.getElementById('label-a'),
+  labelB: document.getElementById('label-b'),
 };
 
 const PAD = { l: 52, r: 16, t: 14, b: 38 };
@@ -413,8 +421,9 @@ function drawShot(ctx, cv, curT, tf, params, trail, Hmax, Xmax, ballColor, glowC
   ctx.clearRect(0, 0, CW, CH);
   drawGridAndAxes(ctx, CW, CH, pad, Hmax, Xmax, ballColor);
 
-  const curY = Math.max(0, projY(vy0, curT));
-  const curX = projX(vx0, curT);
+  const clampedT = Math.min(curT, tf);
+  const curY = Math.max(0, projY(vy0, clampedT));
+  const curX = projX(vx0, clampedT);
   const bx = sx(curX), by = sy(curY);
   const dotEnd = Math.min(curT, tf);
 
@@ -486,7 +495,7 @@ function drawShot(ctx, cv, curT, tf, params, trail, Hmax, Xmax, ballColor, glowC
   }
 
   // ── 角度ガイド ──
-  if (curT < tf * 0.15 || trail.length <= 2) {
+  if (clampedT < tf * 0.15 || trail.length <= 2) {
     const guideLen = Math.min(plotW, plotH) * 0.18;
     ctx.strokeStyle = 'rgba(200,241,53,0.5)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
     ctx.beginPath();
@@ -498,9 +507,9 @@ function drawShot(ctx, cv, curT, tf, params, trail, Hmax, Xmax, ballColor, glowC
   }
 
   // ── 速度ベクトル ──
-  if (curT > 0.05 && curY > 0.5) {
+  if (clampedT > 0.05 && curY > 0.5) {
     const vx = vx0;
-    const vy_cur = vy0 - G * curT;
+    const vy_cur = vy0 - G * clampedT;
     const scaleX = plotW / Xmax;
     const scaleY = plotH / Hmax;
     const dispScale = Math.min(plotW, plotH) * 0.25 / Math.max(v0, 1);
@@ -548,20 +557,26 @@ function drawShot(ctx, cv, curT, tf, params, trail, Hmax, Xmax, ballColor, glowC
 // ═══════════════════════════════════════
 //  Stats 更新
 // ═══════════════════════════════════════
-function updateStats(curT, tf, pA, pB) {
-  const ayRaw = projY(pA.vy0, curT), byRaw = projY(pB.vy0, curT);
-  const ay = Math.max(0, ayRaw), by_ = Math.max(0, byRaw);
-  const avyCur = pA.vy0 - G * curT, bvyCur = pB.vy0 - G * curT;
-  const av = Math.sqrt(pA.vx0*pA.vx0 + avyCur*avyCur);
-  const bv = Math.sqrt(pB.vx0*pB.vx0 + bvyCur*bvyCur);
+function updateStats(curT, tf, tfA, tfB, pA, pB) {
+  // 滞空時間は常に表示
+  els.statAtf.innerHTML  = tfA.toFixed(2) + '<span class="stat-unit">s</span>';
+  els.statBtf.innerHTML  = tfB.toFixed(2) + '<span class="stat-unit">s</span>';
 
-  els.statT.innerHTML  = curT.toFixed(2)+'<span class="stat-unit">s</span>';
-  els.statAy.innerHTML = ay.toFixed(1)+'<span class="stat-unit">m</span>';
-  els.statAv.innerHTML = av.toFixed(1)+'<span class="stat-unit">m/s</span>';
-  els.statBy.innerHTML = by_.toFixed(1)+'<span class="stat-unit">m</span>';
-  els.statBv.innerHTML = bv.toFixed(1)+'<span class="stat-unit">m/s</span>';
-  els.statTf.innerHTML = tf.toFixed(2)+'<span class="stat-unit">s</span>';
-  els.progress.style.width = Math.min(curT / tf * 100, 100)+'%';
+  // 水平移動距離は着地後のみ表示
+  if (curT >= tfA) {
+    const distA = projX(pA.vx0, tfA);
+    els.statAdist.innerHTML = distA.toFixed(1) + '<span class="stat-unit">m</span>';
+  } else {
+    els.statAdist.innerHTML = '—<span class="stat-unit">m</span>';
+  }
+  if (curT >= tfB) {
+    const distB = projX(pB.vx0, tfB);
+    els.statBdist.innerHTML = distB.toFixed(1) + '<span class="stat-unit">m</span>';
+  } else {
+    els.statBdist.innerHTML = '—<span class="stat-unit">m</span>';
+  }
+
+  els.progress.style.width = Math.min(curT / tf * 100, 100) + '%';
 }
 
 // ═══════════════════════════════════════
@@ -572,12 +587,42 @@ function redrawAll() {
   const { tf, tfA, tfB, Hmax, Xmax } = computeScales();
   drawShot(ctxA, cvA, t, tfA, pA, trailA, Hmax, Xmax, '#4a9eff', '#4a9eff');
   drawShot(ctxB, cvB, t, tfB, pB, trailB, Hmax, Xmax, '#ff7a5c', '#ff7a5c');
-  updateStats(t, tf, pA, pB);
+  updateStats(t, tf, tfA, tfB, pA, pB);
 }
 
 // ═══════════════════════════════════════
-//  アニメーションループ
+//  WIN バナー
 // ═══════════════════════════════════════
+function showWinner() {
+  const pA = getParamsA(), pB = getParamsB();
+  const distA = projX(pA.vx0, totalTime(pA.vy0));
+  const distB = projX(pB.vx0, totalTime(pB.vy0));
+  const isDraw = Math.abs(distA - distB) < 0.5;
+
+  els.wrapA.classList.remove('winner-a', 'winner-b');
+  els.wrapB.classList.remove('winner-a', 'winner-b');
+  els.labelA.querySelectorAll('.win-crown').forEach(e => e.remove());
+  els.labelB.querySelectorAll('.win-crown').forEach(e => e.remove());
+
+  if (!isDraw) {
+    const winner = distA >= distB ? 'A' : 'B';
+    const wrapEl = winner === 'A' ? els.wrapA : els.wrapB;
+    const labelEl = winner === 'A' ? els.labelA : els.labelB;
+    wrapEl.classList.add(winner === 'A' ? 'winner-a' : 'winner-b');
+    const crown = document.createElement('span');
+    crown.className = 'win-crown'; crown.textContent = '👑';
+    labelEl.appendChild(crown);
+  }
+}
+
+function hideWinner() {
+  els.wrapA.classList.remove('winner-a', 'winner-b');
+  els.wrapB.classList.remove('winner-a', 'winner-b');
+  els.labelA.querySelectorAll('.win-crown').forEach(e => e.remove());
+  els.labelB.querySelectorAll('.win-crown').forEach(e => e.remove());
+}
+
+
 function frame(now) {
   if (prevTime === null) prevTime = now;
   const delta = (now - prevTime) / 1000;
@@ -594,11 +639,12 @@ function frame(now) {
 
   drawShot(ctxA, cvA, t, tfA, pA, trailA, Hmax, Xmax, '#4a9eff', '#4a9eff');
   drawShot(ctxB, cvB, t, tfB, pB, trailB, Hmax, Xmax, '#ff7a5c', '#ff7a5c');
-  updateStats(t, tf, pA, pB);
+  updateStats(t, tf, tfA, tfB, pA, pB);
 
   if (t >= tf) {
     playing = false; prevTime = null;
     els.btnPlay.textContent = '▶ 再生';
+    showWinner();
   } else {
     animId = requestAnimationFrame(frame);
   }
@@ -613,6 +659,7 @@ function reset() {
   trailA = []; trailB = [];
   els.btnPlay.textContent = '▶ 再生';
   els.progress.style.width = '0%';
+  hideWinner();
   redrawAll();
 }
 
