@@ -247,7 +247,7 @@
     % ---------- 重力矢印（右端、下向き） ----------
     \draw[-{Stealth[length=8pt, width=8pt]}, line width=2.5pt, red]
       (6.55, 2.6) -- (6.55, 1.6)
-      node[above, pos=0.2] {\small $#5$};
+      node[right, pos=0.5] {\small $#5$};
 
     % ---------- 最高点 ----------
     \draw[black] (\Ptop, \PyTop) circle (\R);
@@ -392,6 +392,80 @@
 
     % 高さラベル（右中央）
     \node[right=3pt] at (\W, {0.5*\H}) {\small $#3$};
+
+  \end{tikzpicture}%
+}
+
+% ============================================================
+% \simpleobliqueprojectilediagram — 斜方投射（シンプル版）
+%   座標系: 原点 左下、x軸 右向き、y軸 上向き
+%   x=1cm, y=2cm スケール。以下をすべて整合させて修正済み:
+%     - 矢印がベジェ曲線の接線方向と一致
+%     - 弧の終端が矢印線上に届く
+%     - 球の中心がベジェ曲線上の厳密な座標に配置
+%
+%   補正の詳細:
+%     yscale=2のとき、画面上でθ=30°に見えるTikZ角度φは
+%       tan(φ) = tan(θ)/2 → φ = 16.10°
+%     ベジェ制御点高さ = P1x * tan(φ) = 2.0 * 0.2887 = 0.5774
+%       (これで t=0 の接線が画面上ちょうど30°になる)
+%     楕円弧のパラメトリック終了角度 = 30°
+%       (rx=0.75, ry=0.375 の楕円で end=30° → 終端が矢印線上)
+%     球の座標(ベジェ厳密値):
+%       最高点  t=0.50: (4.0000, 0.4331)
+%       下降中  t=0.73: (6.0004, 0.3434)
+%
+%   引数:
+%     #1: 初速度の値       (例: 19.6\,\mathrm{m/s})
+%     #2: 仰角の数値       (例: 30)  ← 表示用（°は自動付与）
+%     #3: 水平速度の記号   (例: v_x)
+%     #4: 鉛直速度の記号   (例: v_y)
+%
+%   使用例:
+%     \simpleobliqueprojectilediagram{19.6\,\mathrm{m/s}}{30}{v_x}{v_y}
+% ============================================================
+\newcommand{\simpleobliqueprojectilediagram}[4]{%
+  \begin{tikzpicture}[
+    x=1.0cm, y=2.0cm,
+    baseline=(current bounding box.center),
+    >={Stealth[length=5pt, width=4pt]},
+    thick
+  ]
+
+    % ---------- 座標軸 ----------
+    \draw[->, thick] (-0.5, 0) -- (9.5, 0) node[right] {\small $x$};
+    \draw[->, thick] (0, -0.15) -- (0, 1.0) node[above] {\small $y$};
+
+    % ---------- 放物線（破線）----------
+    % 制御点高さ=0.5774: t=0接線がyscale=2で画面上30°になる
+    \draw[dashed, thick]
+      (0, 0)
+      .. controls (2.0, 0.5774) and (6.0, 0.5774) ..
+      (8.0, 0);
+
+    % ---------- 原点の球 ----------
+    \draw[thick] (0, 0) ellipse[x radius=0.22, y radius=0.11];
+
+    % 初速度矢印（TikZ角度16.10° → 画面上30°, 放物線接線と一致）
+    \draw[->, red, thick] (0, 0) -- (0.9608, 0.2774);
+    \node[red, above=3pt] at (0.48, 0.2774) {\small $#1$};
+
+    % 仰角の弧（rx=0.75, ry=0.375, end=30° → 終端が矢印線上に届く）
+    \draw[red]
+      (0.75, 0) arc[x radius=0.75, y radius=0.375, start angle=0, end angle=30];
+    \node[red, right=2pt] at (0.84, 0.08) {\small $#2^\circ$};
+
+    % ---------- 最高点の球（ベジェ t=0.50: x=4.0, y=0.4331）----------
+    \draw[thick] (4.0, 0.4331) ellipse[x radius=0.22, y radius=0.11];
+    \draw[->, thick] (4.0, 0.4331) -- (4.95, 0.4331)
+      node[above=2pt, pos=0.8] {\small $#3$};
+
+    % ---------- 下降中の球（ベジェ t=0.73: x=6.0, y=0.3434）----------
+    \draw[thick] (6.0, 0.3434) ellipse[x radius=0.22, y radius=0.11];
+    \draw[->, thick] (6.0, 0.3434) -- (6.95, 0.3434)
+      node[above=2pt, pos=0.8] {\small $#3$};
+    \draw[->, thick] (6.0, 0.3434) -- (6.0, 0.0434)
+      node[right=3pt, pos=0.6] {\small $#4$};
 
   \end{tikzpicture}%
 }

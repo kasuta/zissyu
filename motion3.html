@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f14; --surface: #161921; --panel: #1d2130;
+    --border: rgba(255,255,255,0.08);
+    --blue: #4a9eff; --coral: #ff7a5c; --gold: #ffc850;
+    --text: #e8eaf0; --muted: #7a8099; --accent: #c8f135;
+    --green: #3fffa2; --purple: #c084fc;
+    --mono: 'DM Mono', monospace; --sans: 'Noto Sans JP', sans-serif;
+  }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 28px 16px 48px;
+  }
+  header { width: 100%; max-width: 1100px; margin-bottom: 22px; }
+  .header-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 5px;
+  }
+  .main { width: 100%; max-width: 1100px; display: grid; gap: 16px; }
+
+  .canvases { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .canvas-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px;
+  }
+  .canvas-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot-blue  { background: var(--blue);  box-shadow: 0 0 7px var(--blue); }
+  .dot-coral { background: var(--coral); box-shadow: 0 0 7px var(--coral); }
+  .canvas-name { font-size: 14px; font-weight: 700; }
+  canvas { display: block; border-radius: 6px; background: var(--bg); border: 1px solid var(--border); width: 100%; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+  .stat-card.stat-a { border-top: 2px solid var(--blue); }
+  .stat-card.stat-b { border-top: 2px solid var(--coral); }
+  .stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+  .stat-value { font-family: var(--mono); font-size: 18px; font-weight: 500; }
+  .stat-unit  { font-size: 11px; color: var(--muted); margin-left: 2px; }
+
+  /* Controls: 2段構成 */
+  .controls-wrap { display: grid; gap: 10px; }
+  .controls {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 22px;
+    display: grid; gap: 12px 20px;
+  }
+  .controls.params { grid-template-columns: repeat(4, 1fr); }
+  .controls.axes   { grid-template-columns: repeat(4, 1fr); }
+  .ctrl-group { display: flex; flex-direction: column; gap: 7px; }
+  .ctrl-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .ctrl-name { font-size: 13px; color: var(--muted); }
+  .ctrl-val  { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--accent); }
+  .ctrl-val.blue  { color: var(--blue); }
+  .ctrl-val.coral { color: var(--coral); }
+  .ctrl-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); padding-bottom: 4px;
+    border-bottom: 1px solid var(--border); grid-column: 1 / -1; }
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
+    background: var(--accent); cursor: pointer; box-shadow: 0 0 7px rgba(200,241,53,0.5);
+  }
+  input[type=range].blue-thumb::-webkit-slider-thumb  { background: var(--blue);  box-shadow: 0 0 7px rgba(74,158,255,0.5); }
+  input[type=range].coral-thumb::-webkit-slider-thumb { background: var(--coral); box-shadow: 0 0 7px rgba(255,122,92,0.5); }
+  input[type=range]::-moz-range-thumb { width:15px;height:15px;border-radius:50%;background:var(--accent);border:none;cursor:pointer; }
+
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button {
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em;
+  }
+  #btn-play  { background: var(--accent); color: #0d0f14; border-color: var(--accent); min-width: 118px; }
+  #btn-play:hover { filter: brightness(1.1); }
+  #btn-reset { background: transparent; color: var(--muted); }
+  #btn-reset:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .btn-toggle { background: transparent; color: var(--muted); }
+  .btn-toggle.btn-on  { color: var(--accent); border-color: var(--accent); }
+  .btn-toggle.btn-off { color: var(--muted);  border-color: var(--border); }
+  .speed-wrap { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .speed-label { font-size: 12px; color: var(--muted); }
+  #speed { width: 80px; }
+  #speed-out { font-family: var(--mono); font-size: 13px; color: var(--accent); min-width: 28px; }
+
+  .progress-wrap { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--coral)); border-radius: 2px; transition: width 0.05s linear; }
+
+  @media (max-width: 800px) {
+    .canvases { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(3,1fr); }
+    .controls.params, .controls.axes { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .controls.params, .controls.axes { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2,1fr); }
+    .speed-wrap { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-label">Physics Simulation — 斜方投射の比較</div>
+</header>
+<div class="main">
+  <div class="progress-wrap"><div id="progress-bar"></div></div>
+
+  <div class="canvases">
+    <div class="canvas-wrap">
+      <div class="canvas-label">
+        <div class="dot dot-blue"></div>
+        <span class="canvas-name" id="label-a">斜方投射 A</span>
+      </div>
+      <canvas id="cv-a"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <div class="canvas-label">
+        <div class="dot dot-coral"></div>
+        <span class="canvas-name" id="label-b">斜方投射 B</span>
+      </div>
+      <canvas id="cv-b"></canvas>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card stat-a">
+      <div class="stat-label" style="color:var(--blue)">A — 経過時間 t</div>
+      <div class="stat-value" id="stat-t">0.00<span class="stat-unit">s</span></div>
+    </div>
+    <div class="stat-card stat-a">
+      <div class="stat-label" style="color:var(--blue)">A — 高さ y</div>
+      <div class="stat-value" id="stat-ay" style="color:var(--gold)">—<span class="stat-unit">m</span></div>
+    </div>
+    <div class="stat-card stat-a">
+      <div class="stat-label" style="color:var(--blue)">A — 合成速度 |v|</div>
+      <div class="stat-value" id="stat-av">0.0<span class="stat-unit">m/s</span></div>
+    </div>
+    <div class="stat-card stat-b">
+      <div class="stat-label" style="color:var(--coral)">B — 高さ y</div>
+      <div class="stat-value" id="stat-by" style="color:var(--gold)">—<span class="stat-unit">m</span></div>
+    </div>
+    <div class="stat-card stat-b">
+      <div class="stat-label" style="color:var(--coral)">B — 合成速度 |v|</div>
+      <div class="stat-value" id="stat-bv">0.0<span class="stat-unit">m/s</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">飛行時間（長い方）</div>
+      <div class="stat-value" id="stat-tf">—<span class="stat-unit">s</span></div>
+    </div>
+  </div>
+
+  <div class="controls-wrap">
+    <!-- パラメータ行 -->
+    <div class="controls params">
+      <div class="ctrl-section">A（青）のパラメータ</div>
+      <div class="ctrl-group">
+        <div class="ctrl-top">
+          <span class="ctrl-name">初速度 v₀A</span>
+          <span class="ctrl-val blue" id="v0a-out">80 m/s</span>
+        </div>
+        <input type="range" class="blue-thumb" id="v0a" min="10" max="80" value="80" step="1">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-top">
+          <span class="ctrl-name">投射角 θA</span>
+          <span class="ctrl-val blue" id="ta-out">45°</span>
+        </div>
+        <input type="range" class="blue-thumb" id="ta" min="1" max="89" value="45" step="1">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-top">
+          <span class="ctrl-name">初速度 v₀B</span>
+          <span class="ctrl-val coral" id="v0b-out">80 m/s</span>
+        </div>
+        <input type="range" class="coral-thumb" id="v0b" min="10" max="80" value="80" step="1">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-top">
+          <span class="ctrl-name">投射角 θB</span>
+          <span class="ctrl-val coral" id="tb-out">60°</span>
+        </div>
+        <input type="range" class="coral-thumb" id="tb" min="1" max="89" value="60" step="1">
+      </div>
+    </div>
+    <!-- 軸・再生行 -->
+    <div class="controls axes">
+      <div class="ctrl-section">軸スケール（共通）</div>
+      <div class="ctrl-group">
+        <div class="ctrl-top">
+          <span class="ctrl-name">横軸最大値 Xmax</span>
+          <span class="ctrl-val" id="xmax-out">653 m</span>
+        </div>
+        <input type="range" id="xmax" min="100" max="1200" value="653" step="1">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-top">
+          <span class="ctrl-name">縦軸最大値 Ymax</span>
+          <span class="ctrl-val" id="ymax-out">163 m</span>
+        </div>
+        <input type="range" id="ymax" min="20" max="600" value="163" step="1">
+      </div>
+      <div class="ctrl-group"><!-- spacer --></div>
+      <div class="ctrl-group"><!-- spacer --></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button id="btn-play">▶ 再生</button>
+    <button id="btn-reset">↺ リセット</button>
+    <button id="btn-predict" class="btn-toggle btn-on">予測線 ON</button>
+    <div class="speed-wrap">
+      <span class="speed-label">再生速度</span>
+      <input type="range" id="speed" min="1" max="5" value="2" step="1">
+      <span id="speed-out">×2</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  定数・状態
+// ═══════════════════════════════════════
+const G      = 9.8;
+const DOT_DT = 0.4;
+
+const XMAX_FIXED = 80 * 80 / G;
+const HMAX_FIXED = 80 * 80 / (4 * G);
+
+let t = 0, playing = false, animId = null, prevTime = null;
+let trailA = [], trailB = [];
+let showPredict = true;
+
+// ═══════════════════════════════════════
+//  Canvas
+// ═══════════════════════════════════════
+const cvA = document.getElementById('cv-a');
+const cvB = document.getElementById('cv-b');
+const ctxA = cvA.getContext('2d');
+const ctxB = cvB.getContext('2d');
+
+const els = {
+  v0a: document.getElementById('v0a'), ta: document.getElementById('ta'),
+  v0b: document.getElementById('v0b'), tb: document.getElementById('tb'),
+  xmax: document.getElementById('xmax'), ymax: document.getElementById('ymax'),
+  speed: document.getElementById('speed'),
+  v0aOut: document.getElementById('v0a-out'), taOut: document.getElementById('ta-out'),
+  v0bOut: document.getElementById('v0b-out'), tbOut: document.getElementById('tb-out'),
+  xmaxOut: document.getElementById('xmax-out'), ymaxOut: document.getElementById('ymax-out'),
+  speedOut: document.getElementById('speed-out'),
+  btnPlay: document.getElementById('btn-play'),
+  btnReset: document.getElementById('btn-reset'),
+  btnPredict: document.getElementById('btn-predict'),
+  statT:  document.getElementById('stat-t'),
+  statAy: document.getElementById('stat-ay'), statAv: document.getElementById('stat-av'),
+  statBy: document.getElementById('stat-by'), statBv: document.getElementById('stat-bv'),
+  statTf: document.getElementById('stat-tf'),
+  progress: document.getElementById('progress-bar'),
+};
+
+const PAD = { l: 52, r: 16, t: 14, b: 38 };
+
+// ═══════════════════════════════════════
+//  物理計算
+// ═══════════════════════════════════════
+function parseParams(v0El, thetaEl, spdEl) {
+  const v0    = +v0El.value;
+  const theta = +thetaEl.value;
+  const spd   = spdEl ? +spdEl.value : 1;
+  const rad   = theta * Math.PI / 180;
+  const vx0   = v0 * Math.cos(rad);
+  const vy0   = v0 * Math.sin(rad);
+  return { v0, theta, rad, vx0, vy0, spd };
+}
+function getParamsA() { return parseParams(els.v0a, els.ta, els.speed); }
+function getParamsB() { return parseParams(els.v0b, els.tb, null); }
+
+function projY(vy0, t) { return vy0 * t - 0.5 * G * t * t; }
+function projX(vx0, t) { return vx0 * t; }
+function totalTime(vy0) { return 2 * vy0 / G; }
+function maxHeight(vy0) { return (vy0 * vy0) / (2 * G); }
+
+function computeScales() {
+  const Hmax = +els.ymax.value;
+  const Xmax = +els.xmax.value;
+  const pA = getParamsA(), pB = getParamsB();
+  const tfA = totalTime(pA.vy0);
+  const tfB = totalTime(pB.vy0);
+  const tf  = Math.max(tfA, tfB);  // アニメーション終了は長い方
+  return { tf, tfA, tfB, Hmax, Xmax };
+}
+
+// ═══════════════════════════════════════
+//  Canvas ユーティリティ
+// ═══════════════════════════════════════
+function getCanvasMetrics(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const CW = cv.width / dpr, CH = cv.height / dpr;
+  return { CW, CH, plotW: CW - PAD.l - PAD.r, plotH: CH - PAD.t - PAD.b };
+}
+function setCanvas(cv, w, h) {
+  const dpr = window.devicePixelRatio || 1;
+  cv.width  = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  cv.style.width = w+'px'; cv.style.height = h+'px';
+  cv.getContext('2d').scale(dpr, dpr);
+}
+function resizeCanvases() {
+  const wA = cvA.closest('.canvas-wrap').clientWidth - 28;
+  const wB = cvB.closest('.canvas-wrap').clientWidth - 28;
+  const H  = Math.round(wA * 0.82);
+  setCanvas(cvA, wA, H); setCanvas(cvB, wB, H);
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, lw) {
+  lw = lw || 2;
+  const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy);
+  if (len < 5) return;
+  const ux=dx/len, uy=dy/len, hw=4, hl=9;
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=lw;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2-ux*hl,y2-uy*hl); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-ux*hl-uy*hw, y2-uy*hl+ux*hw);
+  ctx.lineTo(x2-ux*hl+uy*hw, y2-uy*hl-ux*hw);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawTimeDots(ctx, startT, endT, step, color, radius, pointFn) {
+  ctx.fillStyle = color;
+  for (let tt = startT; tt <= endT + 1e-6; tt += step) {
+    const [x, y] = pointFn(tt);
+    ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+// ═══════════════════════════════════════
+//  グリッド・軸の描画（両Canvas共通）
+// ═══════════════════════════════════════
+function drawGridAndAxes(ctx, CW, CH, pad, Hmax, Xmax, accentColor) {
+  const plotW = CW - pad.l - pad.r;
+  const plotH = CH - pad.t - pad.b;
+  const groundY = pad.t + plotH;
+  function sy(wy) { return groundY - (wy / Hmax) * plotH; }
+
+  // グリッド
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.t + i * plotH / 5;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(CW-pad.r, y); ctx.stroke();
+  }
+  for (let i = 0; i <= 4; i++) {
+    const x = pad.l + i * plotW / 4;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, CH-pad.b); ctx.stroke();
+  }
+
+  // 地面ライン
+  ctx.strokeStyle = 'rgba(200,241,53,0.25)'; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(pad.l, groundY); ctx.lineTo(CW-pad.r, groundY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 軸
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, groundY + 10);
+  ctx.moveTo(pad.l, groundY); ctx.lineTo(CW-pad.r, groundY);
+  ctx.stroke();
+
+  // y軸ラベル
+  ctx.fillStyle = '#7a8099'; ctx.font = '10px DM Mono,monospace'; ctx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const hv = Math.round(Hmax * i / 5);
+    ctx.fillText(hv+'m', pad.l-5, sy(hv)+4);
+  }
+
+  // x軸ラベル
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let i = 1; i <= 4; i++) {
+    ctx.fillStyle = '#7a8099'; ctx.font = '10px DM Mono,monospace';
+    ctx.fillText(Math.round(Xmax*i/4)+'m', pad.l+(i/4)*plotW, groundY+4);
+  }
+  ctx.textBaseline = 'alphabetic';
+
+  // y軸タイトル
+  ctx.save(); ctx.translate(12, pad.t+plotH/2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle = '#7a8099'; ctx.font = '11px Noto Sans JP,sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('高さ y', 0, 0); ctx.restore();
+}
+
+// ═══════════════════════════════════════
+//  斜方投射 汎用描画（A・B 共用）
+// ═══════════════════════════════════════
+function drawShot(ctx, cv, curT, tf, params, trail, Hmax, Xmax, ballColor, glowColor) {
+  const { CW, CH, plotW, plotH } = getCanvasMetrics(cv);
+  const pad = PAD;
+  const { vx0, vy0, v0, rad, theta } = params;
+
+  const groundY = pad.t + plotH;
+  function sx(wx) { return pad.l + (wx / Xmax) * plotW; }
+  function sy(wy) { return groundY - (wy / Hmax) * plotH; }
+
+  ctx.clearRect(0, 0, CW, CH);
+  drawGridAndAxes(ctx, CW, CH, pad, Hmax, Xmax, ballColor);
+
+  const curY = Math.max(0, projY(vy0, curT));
+  const curX = projX(vx0, curT);
+  const bx = sx(curX), by = sy(curY);
+  const dotEnd = Math.min(curT, tf);
+
+  // ── 予測線・着地点マーカー ──
+  if (showPredict && tf > 0) {
+    ctx.beginPath(); ctx.strokeStyle = glowColor+'22'; ctx.lineWidth = 1.5; ctx.setLineDash([3,5]);
+    const steps = 80;
+    for (let i = 0; i <= steps; i++) {
+      const tt = tf * i / steps;
+      const px = sx(projX(vx0, tt));
+      const py = sy(Math.max(0, projY(vy0, tt)));
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // 着地点縦線
+    const landX = sx(projX(vx0, tf));
+    ctx.strokeStyle = 'rgba(63,255,162,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(landX, pad.t); ctx.lineTo(landX, groundY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ── y軸上の正射影（金色） ──
+  if (trail.length > 1) {
+    ctx.beginPath(); ctx.strokeStyle = 'rgba(255,200,80,0.5)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    trail.forEach(([,wy], i) => {
+      const py = sy(wy);
+      i===0 ? ctx.moveTo(pad.l, py) : ctx.lineTo(pad.l, py);
+    }); ctx.stroke();
+  }
+  const yMark = sy(curY);
+  ctx.strokeStyle = '#ffc850'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(pad.l-8, yMark); ctx.lineTo(pad.l+8, yMark); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,200,80,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pad.l, yMark); ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawTimeDots(ctx, DOT_DT, dotEnd, DOT_DT, 'rgba(255,200,80,0.9)', 2.4, (tt) => {
+    return [pad.l, sy(Math.max(0, projY(vy0, tt)))];
+  });
+
+  // ── x軸上の正射影（緑） ──
+  if (trail.length > 1) {
+    ctx.beginPath(); ctx.strokeStyle = 'rgba(63,255,162,0.5)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    trail.forEach(([wx], i) => {
+      const px = sx(wx);
+      i===0 ? ctx.moveTo(px, groundY) : ctx.lineTo(px, groundY);
+    }); ctx.stroke();
+  }
+  const xMark = sx(curX);
+  ctx.strokeStyle = '#3fffa2'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(xMark, groundY-8); ctx.lineTo(xMark, groundY+8); ctx.stroke();
+  ctx.strokeStyle = 'rgba(63,255,162,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(xMark, groundY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawTimeDots(ctx, DOT_DT, dotEnd, DOT_DT, 'rgba(63,255,162,0.9)', 2.4, (tt) => {
+    return [sx(projX(vx0, tt)), groundY];
+  });
+
+  // ── 軌跡 ──
+  if (trail.length > 1) {
+    ctx.beginPath(); ctx.strokeStyle = glowColor+'33'; ctx.lineWidth = 7; ctx.lineJoin = 'round';
+    trail.forEach(([wx,wy],i) => { const x=sx(wx),y=sy(wy); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle = ballColor; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    trail.forEach(([wx,wy],i) => { const x=sx(wx),y=sy(wy); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.stroke();
+  }
+
+  // ── 角度ガイド ──
+  if (curT < tf * 0.15 || trail.length <= 2) {
+    const guideLen = Math.min(plotW, plotH) * 0.18;
+    ctx.strokeStyle = 'rgba(200,241,53,0.5)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(sx(0), groundY);
+    ctx.lineTo(sx(0) + guideLen * Math.cos(rad), groundY - guideLen * Math.sin(rad));
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#c8f135'; ctx.font = 'bold 10px DM Mono,monospace'; ctx.textAlign = 'left';
+    ctx.fillText('θ='+theta+'°', sx(0) + guideLen*0.45, groundY - guideLen*0.25);
+  }
+
+  // ── 速度ベクトル ──
+  if (curT > 0.05 && curY > 0.5) {
+    const vx = vx0;
+    const vy_cur = vy0 - G * curT;
+    const scaleX = plotW / Xmax;
+    const scaleY = plotH / Hmax;
+    const dispScale = Math.min(plotW, plotH) * 0.25 / Math.max(v0, 1);
+    const vxLen =  vx     * dispScale;
+    const vyLen = -vy_cur * dispScale;
+    drawArrow(ctx, bx, by, bx+vxLen, by, '#4a9eff');
+    drawArrow(ctx, bx, by, bx, by+vyLen, '#ff7a5c');
+    const screenDx =  vx     * scaleX;
+    const screenDy = -vy_cur * scaleY;
+    const screenMag = Math.sqrt(screenDx*screenDx + screenDy*screenDy);
+    if (screenMag > 0.01) {
+      const totalLen = Math.sqrt(vxLen*vxLen + vyLen*vyLen);
+      drawArrow(ctx, bx, by, bx + (screenDx/screenMag)*totalLen, by + (screenDy/screenMag)*totalLen, '#ffc850');
+    }
+  }
+
+  // ── ボール ──
+  const grad = ctx.createRadialGradient(bx,by,0,bx,by,15);
+  grad.addColorStop(0, glowColor+'66'); grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(bx,by,15,0,Math.PI*2); ctx.fillStyle=grad; ctx.fill();
+  ctx.beginPath(); ctx.arc(bx,by,7,0,Math.PI*2);
+  ctx.fillStyle=ballColor; ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // 出発点
+  ctx.beginPath(); ctx.arc(sx(0), groundY, 5, 0, Math.PI*2);
+  ctx.fillStyle='rgba(200,241,53,0.6)'; ctx.fill();
+
+  // y軸ラベル
+  ctx.fillStyle='#ffc850'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText('y='+curY.toFixed(0)+'m', pad.l+10, yMark-4);
+
+  // 最高点マーカー（線のみ）
+  const tPeak = vy0 / G;
+  const actualPeak = maxHeight(vy0);
+  if (curT >= tPeak && tPeak > 0 && tPeak < tf) {
+    const pkX = sx(projX(vx0, tPeak));
+    const pkY = sy(actualPeak);
+    ctx.strokeStyle = 'rgba(192,132,252,0.6)'; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(pkX, pkY); ctx.lineTo(pkX, groundY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+// ═══════════════════════════════════════
+//  Stats 更新
+// ═══════════════════════════════════════
+function updateStats(curT, tf, pA, pB) {
+  const ayRaw = projY(pA.vy0, curT), byRaw = projY(pB.vy0, curT);
+  const ay = Math.max(0, ayRaw), by_ = Math.max(0, byRaw);
+  const avyCur = pA.vy0 - G * curT, bvyCur = pB.vy0 - G * curT;
+  const av = Math.sqrt(pA.vx0*pA.vx0 + avyCur*avyCur);
+  const bv = Math.sqrt(pB.vx0*pB.vx0 + bvyCur*bvyCur);
+
+  els.statT.innerHTML  = curT.toFixed(2)+'<span class="stat-unit">s</span>';
+  els.statAy.innerHTML = ay.toFixed(1)+'<span class="stat-unit">m</span>';
+  els.statAv.innerHTML = av.toFixed(1)+'<span class="stat-unit">m/s</span>';
+  els.statBy.innerHTML = by_.toFixed(1)+'<span class="stat-unit">m</span>';
+  els.statBv.innerHTML = bv.toFixed(1)+'<span class="stat-unit">m/s</span>';
+  els.statTf.innerHTML = tf.toFixed(2)+'<span class="stat-unit">s</span>';
+  els.progress.style.width = Math.min(curT / tf * 100, 100)+'%';
+}
+
+// ═══════════════════════════════════════
+//  描画まとめ
+// ═══════════════════════════════════════
+function redrawAll() {
+  const pA = getParamsA(), pB = getParamsB();
+  const { tf, tfA, tfB, Hmax, Xmax } = computeScales();
+  drawShot(ctxA, cvA, t, tfA, pA, trailA, Hmax, Xmax, '#4a9eff', '#4a9eff');
+  drawShot(ctxB, cvB, t, tfB, pB, trailB, Hmax, Xmax, '#ff7a5c', '#ff7a5c');
+  updateStats(t, tf, pA, pB);
+}
+
+// ═══════════════════════════════════════
+//  アニメーションループ
+// ═══════════════════════════════════════
+function frame(now) {
+  if (prevTime === null) prevTime = now;
+  const delta = (now - prevTime) / 1000;
+  prevTime = now;
+  const pA = getParamsA(), pB = getParamsB();
+  const { tf, tfA, tfB, Hmax, Xmax } = computeScales();
+
+  t = Math.min(t + delta * pA.spd * 0.7, tf);
+
+  // A: 飛行時間内だけ軌跡を伸ばす
+  if (t <= tfA) trailA.push([projX(pA.vx0, t), Math.max(0, projY(pA.vy0, t))]);
+  // B: 飛行時間内だけ軌跡を伸ばす
+  if (t <= tfB) trailB.push([projX(pB.vx0, t), Math.max(0, projY(pB.vy0, t))]);
+
+  drawShot(ctxA, cvA, t, tfA, pA, trailA, Hmax, Xmax, '#4a9eff', '#4a9eff');
+  drawShot(ctxB, cvB, t, tfB, pB, trailB, Hmax, Xmax, '#ff7a5c', '#ff7a5c');
+  updateStats(t, tf, pA, pB);
+
+  if (t >= tf) {
+    playing = false; prevTime = null;
+    els.btnPlay.textContent = '▶ 再生';
+  } else {
+    animId = requestAnimationFrame(frame);
+  }
+}
+
+// ═══════════════════════════════════════
+//  リセット
+// ═══════════════════════════════════════
+function reset() {
+  cancelAnimationFrame(animId);
+  playing = false; prevTime = null; t = 0;
+  trailA = []; trailB = [];
+  els.btnPlay.textContent = '▶ 再生';
+  els.progress.style.width = '0%';
+  redrawAll();
+}
+
+// ═══════════════════════════════════════
+//  イベント
+// ═══════════════════════════════════════
+els.btnPlay.addEventListener('click', () => {
+  const { tf } = computeScales();
+  if (t >= tf) reset();
+  playing = !playing;
+  if (playing) {
+    els.btnPlay.textContent = '⏸ 一時停止';
+    prevTime = null; animId = requestAnimationFrame(frame);
+  } else {
+    cancelAnimationFrame(animId);
+    els.btnPlay.textContent = '▶ 再生';
+  }
+});
+els.btnReset.addEventListener('click', reset);
+els.btnPredict.addEventListener('click', () => {
+  showPredict = !showPredict;
+  els.btnPredict.textContent = '予測線 ' + (showPredict ? 'ON' : 'OFF');
+  els.btnPredict.classList.toggle('btn-on',  showPredict);
+  els.btnPredict.classList.toggle('btn-off', !showPredict);
+  redrawAll();
+});
+els.v0a.addEventListener('input', e => { els.v0aOut.textContent = e.target.value+' m/s'; reset(); });
+els.ta .addEventListener('input', e => { els.taOut .textContent = e.target.value+'°';    reset(); });
+els.v0b.addEventListener('input', e => { els.v0bOut.textContent = e.target.value+' m/s'; reset(); });
+els.tb .addEventListener('input', e => { els.tbOut .textContent = e.target.value+'°';    reset(); });
+els.xmax.addEventListener('input', e => { els.xmaxOut.textContent = e.target.value+' m'; redrawAll(); });
+els.ymax.addEventListener('input', e => { els.ymaxOut.textContent = e.target.value+' m'; redrawAll(); });
+els.speed.addEventListener('input', e => { els.speedOut.textContent = '×'+e.target.value; });
+window.addEventListener('resize', () => { resizeCanvases(); redrawAll(); });
+
+// ═══════════════════════════════════════
+//  初期化
+// ═══════════════════════════════════════
+resizeCanvases();
+reset();
+</script>
+</body>
+</html>

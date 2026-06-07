@@ -395,3 +395,70 @@
 
   \end{tikzpicture}%
 }
+
+% ============================================================
+% \horizontalprojectilediagram — 水平投射（具体値付き）
+%   座標系: 原点 左上、x軸 右向き、y軸 下向き
+%   地面はy軸まで延長。各ベクトルは球の中心から出発。
+%
+%   引数:
+%     #1: 初速度の記号と値   (例: 6.0\,\mathrm{m/s})
+%     #2: 水平速度成分の記号 (例: v_x)
+%     #3: 鉛直速度成分の記号 (例: v_y)
+%     #4: 高さの値           (例: 78.9\,\mathrm{m})
+%
+%   使用例:
+%     \horizontalprojectilediagram{6.0\,\mathrm{m/s}}{v_x}{v_y}{78.9\,\mathrm{m}}
+% ============================================================
+\newcommand{\horizontalprojectilediagram}[4]{%
+  \def\R{0.35}%   球の半径
+  \def\GH{-5.0}%  地面の y 座標（TikZ 通常座標、下が負）
+  \def\VH{1.5}%   水平速度矢印の長さ
+  \def\VV{1.5}%   鉛直速度矢印の長さ
+  \def\Px{3.8}%   途中位置の球 x 座標
+  \def\Py{-2.6}%  途中位置の球 y 座標
+  \begin{tikzpicture}[
+    baseline=(current bounding box.north),
+    >={Stealth[length=5pt, width=4pt]}
+  ]
+
+    % ---------- 座標軸（x: 右向き, y: 下向き） ----------
+    \draw[->, thick] (-0.5, 0) -- (8.5, 0) node[right] {\small $x$};
+    \draw[->, thick] (0, 0.5) -- (0, -6.5) node[below] {\small $y$};
+
+    % ---------- 地面（y軸から右端まで） ----------
+    \draw[thick] (0, \GH) -- (8.5, \GH);
+    % ハッチング（斜め下向き）
+    \foreach \hx in {0.3, 0.9, 1.5, 2.1, 2.7, 3.3, 3.9, 4.5, 5.1, 5.7, 6.3, 6.9, 7.5, 8.1}{%
+      \draw[thin] (\hx, \GH) -- (\hx - 0.3, \GH - 0.35);%
+    }
+    \node[below=4pt] at (4.5, \GH) {\small 地面};
+
+    % ---------- 高さ両矢印（左側、赤） ----------
+    \draw[<->, red, thick] (-0.5, 0) -- (-0.5, \GH);
+    \node[red, left=4pt] at (-0.5, -2.5) {\small $#4$};
+
+    % ---------- 原点の球（t=0） ----------
+    \draw[thick] (0, 0) circle (\R);
+
+    % 初速度矢印（球の中心から、赤・右向き）
+    \draw[->, red, thick] (0, 0) -- (\VH, 0)
+      node[above, pos=0.6] {\small $#1$};
+
+    % ---------- 放物線（破線） ----------
+    \draw[dashed, thick]
+      (0, 0) .. controls (2.5, -0.5) and (4.0, -2.5) .. (5.5, \GH);
+
+    % ---------- 途中の球 ----------
+    \draw[thick] (\Px, \Py) circle (\R);
+
+    % vx 矢印（球の中心から、右向き）
+    \draw[->, thick] (\Px, \Py) -- (\Px + \VH, \Py)
+      node[above, pos=0.75] {\small $#2$};
+
+    % vy 矢印（球の中心から、下向き）
+    \draw[->, thick] (\Px, \Py) -- (\Px, \Py - \VV)
+      node[right, pos=0.75] {\small $#3$};
+
+  \end{tikzpicture}%
+}

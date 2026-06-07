@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>斜方投射 vs 鉛直投げ上げ シミュレーター</title>
+<!-- <title>斜方投射 vs 鉛直投げ上げ シミュレーター</title> -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -52,7 +52,7 @@
   .controls {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 14px; padding: 18px 22px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px 20px;
   }
   .ctrl-group { display: flex; flex-direction: column; gap: 7px; }
   .ctrl-top { display: flex; justify-content: space-between; align-items: baseline; }
@@ -81,6 +81,9 @@
   #btn-play:hover { filter: brightness(1.1); }
   #btn-reset { background: transparent; color: var(--muted); }
   #btn-reset:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .btn-toggle { background: transparent; color: var(--muted); }
+  .btn-toggle.btn-on  { color: var(--accent); border-color: var(--accent); }
+  .btn-toggle.btn-off { color: var(--muted);  border-color: var(--border); }
   .speed-wrap { display: flex; align-items: center; gap: 10px; margin-left: auto; }
   .speed-label { font-size: 12px; color: var(--muted); }
   #speed { width: 80px; }
@@ -101,19 +104,22 @@
   .progress-wrap { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
   #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--coral)); border-radius: 2px; transition: width 0.05s linear; }
 
-  @media (max-width: 640px) {
+  @media (max-width: 780px) {
     .canvases { grid-template-columns: 1fr; }
     .stats { grid-template-columns: repeat(2,1fr); }
-    .controls { grid-template-columns: 1fr; }
+    .controls { grid-template-columns: 1fr 1fr; }
     .formula-bar { grid-template-columns: 1fr; }
     .speed-wrap { margin-left: 0; width: 100%; }
+  }
+  @media (max-width: 480px) {
+    .controls { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 <header>
   <div class="header-label">Physics Simulation</div>
-  <h1>斜方投射 vs 鉛直投げ上げ <span>— 初速 v₀ の向きの違い</span></h1>
+  <!-- <h1>斜方投射 vs 鉛直投げ上げ <span>— 初速 v₀ の向きの違い</span></h1> -->
 </header>
 <div class="main">
   <div class="progress-wrap"><div id="progress-bar"></div></div>
@@ -123,7 +129,7 @@
       <div class="canvas-label">
         <div class="dot dot-blue"></div>
         <span class="canvas-name">斜方投射</span>
-        <span class="canvas-eq">x=v₀cosθ·t &nbsp;|&nbsp; y=v₀sinθ·t−½gt²</span>
+        <!-- <span class="canvas-eq">x=v₀cosθ·t &nbsp;|&nbsp; y=v₀sinθ·t−½gt²</span> -->
       </div>
       <canvas id="cv-proj"></canvas>
     </div>
@@ -131,7 +137,7 @@
       <div class="canvas-label">
         <div class="dot dot-coral"></div>
         <span class="canvas-name">鉛直投げ上げ</span>
-        <span class="canvas-eq">x=0 &nbsp;|&nbsp; y=v₀t−½gt²</span>
+        <!-- <span class="canvas-eq">x=0 &nbsp;|&nbsp; y=v₀t−½gt²</span> -->
       </div>
       <canvas id="cv-vert"></canvas>
     </div>
@@ -164,29 +170,44 @@
     <div class="ctrl-group">
       <div class="ctrl-top">
         <span class="ctrl-name">初速度 v₀</span>
-        <span class="ctrl-val" id="v0-out">40 m/s</span>
+        <span class="ctrl-val" id="v0-out">80 m/s</span>
       </div>
-      <input type="range" id="v0" min="10" max="80" value="40" step="1">
+      <input type="range" id="v0" min="10" max="80" value="80" step="1">
     </div>
     <div class="ctrl-group">
       <div class="ctrl-top">
         <span class="ctrl-name">投射角 θ（斜方投射）</span>
-        <span class="ctrl-val" id="theta-out">45°</span>
+        <span class="ctrl-val" id="theta-out">90°</span>
       </div>
-      <input type="range" id="theta" min="10" max="80" value="45" step="1">
+      <input type="range" id="theta" min="10" max="90" value="90" step="1">
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-top">
+        <span class="ctrl-name">横軸最大値 Xmax</span>
+        <span class="ctrl-val" id="xmax-out">653 m</span>
+      </div>
+      <input type="range" id="xmax" min="100" max="1200" value="653" step="1">
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-top">
+        <span class="ctrl-name">縦軸最大値 Ymax</span>
+        <span class="ctrl-val" id="ymax-out">163 m</span>
+      </div>
+      <input type="range" id="ymax" min="20" max="600" value="163" step="1">
     </div>
   </div>
 
   <div class="btn-row">
     <button id="btn-play">▶ 再生</button>
     <button id="btn-reset">↺ リセット</button>
+    <button id="btn-predict" class="btn-toggle btn-on">予測線 ON</button>
     <div class="speed-wrap">
       <span class="speed-label">再生速度</span>
       <input type="range" id="speed" min="1" max="5" value="2" step="1">
       <span id="speed-out">×2</span>
     </div>
   </div>
-
+<!-- 
   <div class="formula-bar">
     <div class="formula-col">
       <div class="formula-title">斜方投射の分解</div>
@@ -207,7 +228,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <script>
 // ═══════════════════════════════════════
@@ -216,8 +237,17 @@
 const G      = 9.8;
 const DOT_DT = 0.4;
 
+// 横軸: v0=80, θ=45° のときの最大飛距離で固定
+// R_max = v0_max² / g（θ=45° のとき sin2θ=1）
+const XMAX_FIXED = 80 * 80 / G;  // ≈ 653 m
+
+// 縦軸: v0=80, θ=45° のときの最高点でぎりぎり収まるよう固定
+// vy0 = 80*sin(45°) = 80/√2 → H = vy0²/(2g) = 80²/(4g)
+const HMAX_FIXED = 80 * 80 / (4 * G);  // ≈ 163 m
+
 let t = 0, playing = false, animId = null, prevTime = null;
 let trailP = [], trailV = [];  // P=斜方, V=鉛直
+let showPredict = true;        // 予測線表示フラグ
 
 // ═══════════════════════════════════════
 //  Canvas
@@ -230,12 +260,17 @@ const ctxV = cvV.getContext('2d');
 const els = {
   v0:       document.getElementById('v0'),
   theta:    document.getElementById('theta'),
+  xmax:     document.getElementById('xmax'),
+  ymax:     document.getElementById('ymax'),
   speed:    document.getElementById('speed'),
   v0Out:    document.getElementById('v0-out'),
   thetaOut: document.getElementById('theta-out'),
+  xmaxOut:  document.getElementById('xmax-out'),
+  ymaxOut:  document.getElementById('ymax-out'),
   speedOut: document.getElementById('speed-out'),
-  btnPlay:  document.getElementById('btn-play'),
-  btnReset: document.getElementById('btn-reset'),
+  btnPlay:    document.getElementById('btn-play'),
+  btnReset:   document.getElementById('btn-reset'),
+  btnPredict: document.getElementById('btn-predict'),
   statT:    document.getElementById('stat-t'),
   statY:    document.getElementById('stat-y'),
   statVy:   document.getElementById('stat-vy'),
@@ -393,10 +428,12 @@ function drawGridAndAxes(ctx, CW, CH, pad, Hmax, Xmax, mode) {
       ctx.fillText(xv+'m', px, groundY + 4);
     }
     ctx.fillStyle = '#4a9eff'; ctx.font = '11px Noto Sans JP,sans-serif';
-    ctx.fillText('水平距離 x', pad.l + plotW/2, titleY);
+    ctx.fillText('', pad.l + plotW/2, titleY);
+    // ctx.fillText('水平距離 x', pad.l + plotW/2, titleY);
   } else {
     ctx.fillStyle = '#ff7a5c'; ctx.font = '11px Noto Sans JP,sans-serif';
-    ctx.fillText('水平移動なし（x = 0）', pad.l + plotW/2, titleY);
+    // ctx.fillText('水平移動なし（x = 0）', pad.l + plotW/2, titleY);
+    ctx.fillText('', pad.l + plotW/2, titleY);
   }
   ctx.textBaseline = 'alphabetic';
 
@@ -428,7 +465,7 @@ function drawProj(curT, tf, params, trail, Hmax, Xmax) {
   const dotEnd = Math.min(curT, tf);
 
   // ── 放物線の予告（薄い点線） ──
-  if (tf > 0) {
+  if (showPredict && tf > 0) {
     ctx.beginPath(); ctx.strokeStyle = 'rgba(74,158,255,0.12)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,5]);
     const steps = 80;
     for (let i = 0; i <= steps; i++) {
@@ -438,6 +475,14 @@ function drawProj(curT, tf, params, trail, Hmax, Xmax) {
       i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
     }
     ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // ── 着地点マーカー（予測線ONの時のみ表示） ──
+  if (showPredict) {
+    const landX = sx(projX(vx0, tf));
+    ctx.strokeStyle = 'rgba(63,255,162,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(landX, pad.t); ctx.lineTo(landX, groundY); ctx.stroke();
+    ctx.setLineDash([]);
   }
 
   // ── y軸上の正射影（金色） ──
@@ -515,12 +560,26 @@ function drawProj(curT, tf, params, trail, Hmax, Xmax) {
   if (curT > 0.05 && curY > 0.5) {
     const vx = vx0;
     const vy_cur = vy0 - G * curT;
-    const scale = Math.min(plotW, plotH) * 0.25 / Math.max(v0, 1);
-    const vxLen = vx * scale;
-    const vyLen = -vy_cur * scale;  // 画面はy下向きなのでマイナス
+    // 各軸のpx/m係数（X・Yでスケールが異なる）
+    const scaleX = plotW / Xmax;
+    const scaleY = plotH / Hmax;
+    // 成分ベクトルを画面px換算（長さは物理速度に比例、適度な係数で表示）
+    const dispScale = Math.min(plotW, plotH) * 0.25 / Math.max(v0, 1);
+    const vxLen =  vx     * dispScale;
+    const vyLen = -vy_cur * dispScale;  // 画面はy下向きなのでマイナス
+    // vx・vy成分矢印
     drawArrow(ctx, bx, by, bx+vxLen, by, '#4a9eff');
     drawArrow(ctx, bx, by, bx, by+vyLen, '#ff7a5c');
-    drawArrow(ctx, bx, by, bx+vxLen, by+vyLen, '#ffc850');
+    // 合成速度：vxとvyを画面座標系に正しく変換してから正規化 → 接線方向
+    const screenDx =  vx     * scaleX;  // 画面上のx成分 [px/s]
+    const screenDy = -vy_cur * scaleY;  // 画面上のy成分 [px/s]（y反転）
+    const screenMag = Math.sqrt(screenDx*screenDx + screenDy*screenDy);
+    if (screenMag > 0.01) {
+      const totalLen = Math.sqrt(vxLen*vxLen + vyLen*vyLen);
+      const ux = screenDx / screenMag;
+      const uy = screenDy / screenMag;
+      drawArrow(ctx, bx, by, bx + ux*totalLen, by + uy*totalLen, '#ffc850');
+    }
   }
 
   // ── ボール ──
@@ -531,13 +590,6 @@ function drawProj(curT, tf, params, trail, Hmax, Xmax) {
   ctx.fillStyle='#4a9eff'; ctx.fill();
   ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
 
-  // 着地メッセージ
-  if (curT >= tf - 0.05 && curT > 0.1) {
-    const R = projX(vx0, tf);
-    ctx.font='bold 12px Noto Sans JP,sans-serif'; ctx.fillStyle='#c8f135'; ctx.textAlign='center';
-    ctx.fillText('着地! x='+R.toFixed(1)+'m', bx, by-18);
-  }
-
   // 出発点
   ctx.beginPath(); ctx.arc(sx(0), groundY, 5, 0, Math.PI*2);
   ctx.fillStyle='rgba(200,241,53,0.6)'; ctx.fill();
@@ -546,16 +598,15 @@ function drawProj(curT, tf, params, trail, Hmax, Xmax) {
   ctx.fillStyle='#ffc850'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='left';
   ctx.fillText('y='+curY.toFixed(0)+'m', pad.l+10, yMark-4);
 
-  // 最高点マーカー
+  // 最高点マーカー（線のみ、テキストなし）
   const tPeak = vy0 / G;
+  const actualPeak = maxHeight(vy0);
   if (curT >= tPeak && tPeak > 0 && tPeak < tf) {
     const pkX = sx(projX(vx0, tPeak));
-    const pkY = sy(Hmax);
+    const pkY = sy(actualPeak);
     ctx.strokeStyle = 'rgba(192,132,252,0.6)'; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
     ctx.beginPath(); ctx.moveTo(pkX, pkY); ctx.lineTo(pkX, groundY); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle='#c084fc'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
-    ctx.fillText('最高点', pkX, pkY - 6);
   }
 }
 
@@ -581,7 +632,7 @@ function drawVert(curT, tfVert, params, trail, Hmax) {
   const dotEnd = Math.min(curT, tfVert);
 
   // ── 軌跡予告 ──
-  if (tfVert > 0) {
+  if (showPredict && tfVert > 0) {
     ctx.beginPath(); ctx.strokeStyle = 'rgba(255,122,92,0.12)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,5]);
     const steps = 80;
     for (let i = 0; i <= steps; i++) {
@@ -657,12 +708,6 @@ function drawVert(curT, tfVert, params, trail, Hmax) {
   ctx.fillStyle='#ff7a5c'; ctx.fill();
   ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
 
-  // 着地メッセージ
-  if (curT >= tfVert - 0.05 && curT > 0.1) {
-    ctx.font='bold 12px Noto Sans JP,sans-serif'; ctx.fillStyle='#c8f135'; ctx.textAlign='center';
-    ctx.fillText('着地！ t='+tfVert.toFixed(2)+'s', midX, by-18);
-  }
-
   // 出発点
   ctx.beginPath(); ctx.arc(midX, groundY, 5, 0, Math.PI*2);
   ctx.fillStyle='rgba(200,241,53,0.6)'; ctx.fill();
@@ -671,32 +716,31 @@ function drawVert(curT, tfVert, params, trail, Hmax) {
   ctx.fillStyle='#ffc850'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='left';
   ctx.fillText('y='+curY.toFixed(0)+'m', pad.l+10, yMark-4);
 
-  // 最高点マーカー
+  // 最高点マーカー（線のみ、テキストなし）
   const tPeakV = vy0 / G;
+  const actualPeak = maxHeight(vy0);
   if (curT >= tPeakV && tPeakV > 0 && tPeakV < tfVert) {
     ctx.strokeStyle = 'rgba(192,132,252,0.6)'; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
-    ctx.beginPath(); ctx.moveTo(pad.l, sy(Hmax)); ctx.lineTo(CW-pad.r, sy(Hmax)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.l, sy(actualPeak)); ctx.lineTo(CW-pad.r, sy(actualPeak)); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle='#c084fc'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='right';
-    ctx.fillText('最高点 '+Hmax.toFixed(0)+'m', CW-pad.r-4, sy(Hmax)-6);
   }
 }
 
 // ═══════════════════════════════════════
 //  Stats 更新
 // ═══════════════════════════════════════
-function updateStats(curT, tf, params, Hmax) {
+function updateStats(curT, tf, params) {
   const { vx0, vy0 } = params;
   const curY = Math.max(0, projY(vy0, curT));
   const vy_cur = vy0 - G * curT;
   const v = Math.sqrt(vx0*vx0 + vy_cur*vy_cur);
-  const tPeak = vy0 / G;
+  const actualHmax = maxHeight(vy0);  // 実際の最高点（表示用）
 
   els.statT.innerHTML  = curT.toFixed(2)+'<span class="stat-unit">s</span>';
   els.statY.innerHTML  = curY.toFixed(1)+'<span class="stat-unit">m</span>';
   els.statVy.innerHTML = vy_cur.toFixed(1)+'<span class="stat-unit">m/s</span>';
   els.statV.innerHTML  = v.toFixed(1)+'<span class="stat-unit">m/s</span>';
-  els.statTf.innerHTML = Hmax.toFixed(1)+'<span class="stat-unit">m</span>';
+  els.statTf.innerHTML = actualHmax.toFixed(1)+'<span class="stat-unit">m</span>';
   els.progress.style.width = Math.min(curT / tf * 100, 100)+'%';
 }
 
@@ -704,11 +748,11 @@ function updateStats(curT, tf, params, Hmax) {
 //  スケール計算（両Canvas共通）
 // ═══════════════════════════════════════
 function computeScales(params) {
-  const { vx0, vy0, v0, rad } = params;
-  const tf    = totalTime(vy0);    // 斜方投射の飛行時間
-  const tfV   = totalTime(vy0);    // 鉛直投げ上げも同じ vy0 なので同じ飛行時間
-  const Hmax  = maxHeight(vy0);
-  const Xmax  = Math.max(maxRange(v0, rad), 10);
+  const { vy0 } = params;
+  const tf   = totalTime(vy0);
+  const tfV  = totalTime(vy0);
+  const Hmax = +els.ymax.value;   // スライダーから
+  const Xmax = +els.xmax.value;   // スライダーから
   return { tf, tfV, Hmax, Xmax };
 }
 
@@ -717,7 +761,7 @@ function redrawAll() {
   const { tf, tfV, Hmax, Xmax } = computeScales(params);
   drawProj(t, tf, params, trailP, Hmax, Xmax);
   drawVert(t, tfV, params, trailV, Hmax);
-  updateStats(t, tf, params, Hmax);
+  updateStats(t, tf, params);
 }
 
 // ═══════════════════════════════════════
@@ -740,7 +784,7 @@ function frame(now) {
 
   drawProj(t, tf, params, trailP, Hmax, Xmax);
   drawVert(t, tfV, params, trailV, Hmax);
-  updateStats(t, tf, params, Hmax);
+  updateStats(t, tf, params);
 
   if (t >= tf) {
     playing = false; prevTime = null;
@@ -779,11 +823,24 @@ els.btnPlay.addEventListener('click', () => {
   }
 });
 els.btnReset.addEventListener('click', reset);
+els.btnPredict.addEventListener('click', () => {
+  showPredict = !showPredict;
+  els.btnPredict.textContent = '予測線 ' + (showPredict ? 'ON' : 'OFF');
+  els.btnPredict.classList.toggle('btn-on',  showPredict);
+  els.btnPredict.classList.toggle('btn-off', !showPredict);
+  redrawAll();
+});
 els.v0.addEventListener('input', e => {
   els.v0Out.textContent = e.target.value+' m/s'; reset();
 });
 els.theta.addEventListener('input', e => {
   els.thetaOut.textContent = e.target.value+'°'; reset();
+});
+els.xmax.addEventListener('input', e => {
+  els.xmaxOut.textContent = e.target.value+' m'; redrawAll();
+});
+els.ymax.addEventListener('input', e => {
+  els.ymaxOut.textContent = e.target.value+' m'; redrawAll();
 });
 els.speed.addEventListener('input', e => {
   els.speedOut.textContent = '×'+e.target.value;

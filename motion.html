@@ -355,11 +355,11 @@ function drawGridAndAxes(ctx, CW, CH, pad, H, isProj) {
     }
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#4a9eff'; ctx.font = '11px Noto Sans JP,sans-serif';
-    ctx.fillText('水平距離 x（0〜400m 固定）', pad.l+plotW/2, xTitleY);
+    ctx.fillText('', pad.l+plotW/2, xTitleY);
   } else {
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#ff7a5c'; ctx.font = '11px Noto Sans JP,sans-serif';
-    ctx.fillText('水平移動なし（x = 0）', pad.l+plotW/2, xTitleY);
+    ctx.fillText('', pad.l+plotW/2, xTitleY);
   }
   ctx.textBaseline = 'alphabetic';
 
