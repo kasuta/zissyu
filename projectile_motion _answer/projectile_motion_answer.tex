@@ -182,25 +182,73 @@
 	問1.小球を水平な地面から仰角$30°$、速さ$19.6\,\si{\metre\per\second}$で投げた。
 	重力加速度の大きさを$9.8\,\si{\metre\per\second\squared}$,水平方向を　　\,\,$x$軸の正、
 	鉛直上向きを$y$軸の正として以下の問いに答えよ。\\
-	(1)初速度の$x$成分及び$y$成分は何$\si{\metre\per\second}$か求めよ。ただし、ルートは開かなくてよい。\\\\\\\\\\\\
+	(1)初速度の$x$成分及び$y$成分は何$\si{\metre\per\second}$か求めよ。ただし、ルートは開かなくてよい。\\
+	\color{red}
+	初速度を図のように分解して考えると、初速度の$x$成分$v_{0x}$及び、$y$成分$v_{0y}$は以下のように求められる。
+	\begin{align*}
+		v_{0x} &= v_0\cos\theta = 19.6\cos30° = 19.6 \cdot \frac{\sqrt{3}}{2} = \underline{9.80\sqrt{3} \,\si{\metre\per\second}} &\\
+		v_{0y} &= v_0\sin\theta = 19.6\sin30° = 19.6 \cdot \frac{1}{2} = \underline{9.80 \,\si{\metre\per\second}} &
+	\end{align*}
+	\color{black}
 	\begin{minipage}[t]{0.44\linewidth}
-	(2)最高点に達するまでの時間は何$\si{\second}$か求めよ。\\\\\\\\\\\\\\\\\\\\\\
-	(3)最高点の高さは何$\si{\metre}$か求めよ。\\\\\\\\\\\\\\\\\\
+	(2)最高点に達するまでの時間は何$\si{\second}$か求めよ。\\
+	\color{red}
+	最高点では$v_y=0$なので、式(ii)-②式より、
+	\begin{align*}
+		v_y &= v_{0y} - gt\\
+		0 &= 9.80 - 9.8t\\
+		t &= \underline{1.0\,\si{\second}}
+	\end{align*}
+	\color{black}
 	\end{minipage}
 	\hfill
 	\begin{minipage}[t]{0.44\linewidth}
 		\vspace{0.5cm}
 		\scalebox{0.9}{\simpleobliqueprojectilediagram{19.6\,\mathrm{m/s}}{30}{v_x}{v_y}}
 	\end{minipage}\\
-	(4)投げてから地面に達するまでの時間は何$\si{\second}$か求めよ。\\\\\\\\\\\\\\\\\\
-	(5)小球が地面に落ちたときの水平距離は何$\si{\metre}$か求めよ。ただし、$\sqrt{3} \simeq 1.73$とする。
-	% \begin{minipage}[t]{0.44\linewidth}
-
-	% \end{minipage}
-	% \hfill
-	% \begin{minipage}[t]{0.44\linewidth}
-
-	% \end{minipage}
-
-	\clearpage
+	(3)最高点の高さは何$\si{\metre}$か求めよ。\\
+	\color{red}
+	(2)より、最高点に達するのにかかる時間は1.0\,$\si{\second}$なので、式(ii)-③より、
+	\begin{align*}
+		y &= v_{0y}t -\frac{1}{2}gt^2\\
+		&=9.80\times1.0-\frac{1}{2}\times9.8\times1.0^2\\
+		&= 9.8-4.9\\
+		&=\underline{4.9\,\si{\metre}}
+	\end{align*}
+	\color{black}
+	\noindent
+	(4)投げてから着地するまでの時間は何$\si{\second}$か求めよ。\\
+	\color{red}
+	\begin{minipage}[t]{0.55\linewidth}
+		着地するとき、$y=0$になるので、式(ii)-③より、
+		\begin{align*}
+			y &= v_{0y}t -\frac{1}{2}gt^2\\
+			0 &= 9.80t - \frac{1}{2}\times9.8t^2\\
+			0 &= t(9.80 - 4.9t)
+		\end{align*}
+		これより、$t=\underline{2.0\,\si{\second}}$
+		\\\\\small(図より、もう一つの解$t=0$は投げた瞬間の時間なので不適)
+	\end{minipage}%
+	\begin{tikzpicture}[baseline=(current bounding box.north)]
+		\draw[dashed] (0, 0) -- (0, -4.7cm);
+	\end{tikzpicture}%
+	\begin{minipage}[t]{0.40\linewidth}
+		\boxed{別解}\\
+		対称性から、着地にかかる時間は、最高点に達するのにかかる時間の2倍なので、
+		\begin{align*}
+			t=2\times1.0=\underline{2.0\,\si{\second}}
+		\end{align*}
+	\end{minipage}\\
+	\color{black}
+	(5)小球が地面に落ちたときの水平距離は何$\si{\metre}$か求めよ。ただし、$\sqrt{3} \simeq 1.73$とする。\\
+	\color{red}
+	(4)より、着地するまでにかかる時間は2.0\,$\si{\second}$なので、式(i)-③より、
+	\begin{align*}
+		x &=v_{0x}t\\
+		&=9.80\sqrt{3}\times2.0\\
+		&=19.6\sqrt{3}\\
+		&=19.6\times1.73\\
+		&=33.908\\
+		&\simeq34\,\si{\metre}
+	\end{align*}
 \end{document}
